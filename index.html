@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,">
+<title>DYING SCREAM — MIC ISOLATION v17</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#07080b;color:#e9ebee;font:12px system-ui,sans-serif}main{display:grid;grid-template-columns:minmax(0,1fr) 308px;height:100vh}#stage{position:relative;min-width:0;overflow:hidden;background:black}#view{width:100%;height:100%;display:block;object-fit:contain}#mark{position:absolute;left:24px;top:22px;pointer-events:none;color:#c4c8cc;font:10px monospace;letter-spacing:2px}#mark b{display:block;color:white;font-size:16px;letter-spacing:3px;margin-bottom:8px}aside{padding:20px;background:#111318;overflow:auto;border-left:1px solid #2c3035}h1{font-size:20px;letter-spacing:1px;margin:0}small,p{color:#939ba5;line-height:1.6}small{font-size:10px}button,select,input[type=file]{width:100%;background:#1b2028;border:1px solid #373f49;color:#dfe4e9;padding:9px;border-radius:4px;margin:5px 0;font:inherit}button{cursor:pointer}button:hover{border-color:#8ef5ca}button.active{color:#8ef5ca;border-color:#4f9c80}#mutate{background:#b14462;color:#fff;font-weight:700}label{display:flex;justify-content:space-between;margin-top:12px;color:#abb5bf}input[type=range],audio{width:100%;accent-color:#a3f3d1}#bars{height:46px;display:flex;gap:4px;align-items:end;margin-top:10px}#bars i{flex:1;min-height:2px;background:linear-gradient(#bafbe2,#428d76);height:2%}#state{color:#a3f3d1;min-height:36px;margin:12px 0 4px;line-height:1.5}#detail,#metrics{font:10px/1.7 monospace;color:#98a7b2;overflow-wrap:anywhere}.row{display:flex;gap:7px}.row>*{flex:1}summary{cursor:pointer;color:#a3f3d1;margin:16px 0}#audioState,#micStatus{font-size:11px;line-height:1.6;margin:7px 0;color:#dcc3c8}#audioDebug{white-space:pre-wrap;overflow-wrap:anywhere;font:10px/1.6 monospace;color:#adb5c1}#micHud{position:absolute;right:18px;top:20px;font:12px monospace;color:#92959d;background:#09080ce6;padding:8px 12px;border:1px solid #35323a}#micHud.active{color:#b3ff9d;border-color:#92c77f;box-shadow:0 0 18px #75e14533}#fileName{overflow-wrap:anywhere;color:#afb2bb;font-size:11px}#mutationState{font-size:11px;line-height:1.5;color:#d9a8b8;margin:6px 0}#mutationProgress{width:100%;height:5px;accent-color:#bc526e}#morphHud{position:absolute;bottom:16px;left:20px;color:#e0bbc8;font:11px monospace;pointer-events:none}#stage:fullscreen{width:100vw;height:100vh;background:#000}#stage:-webkit-full-screen{width:100vw;height:100vh;background:#000}#stage:fullscreen #view{width:100%;height:100%}#stage:-webkit-full-screen #view{width:100%;height:100%}.presenting #mark{display:none}.presenting #exitFull{display:block;width:auto;position:absolute;left:16px;top:12px;z-index:5;opacity:.35}.presenting #exitFull:hover,.presenting #exitFull:focus{opacity:1}.css-fullscreen{overflow:hidden}.css-fullscreen #stage{position:fixed;inset:0;width:100vw;height:100vh;z-index:1000}.presenting aside{display:none}#presentationHud{position:absolute;right:18px;bottom:14px;font:10px monospace;color:#a6a0a7;pointer-events:none}#diagnostics{white-space:pre-wrap;overflow-wrap:anywhere;font:10px/1.6 monospace;color:#b3bac5}#fullStatus,#saveStatus{font-size:11px;line-height:1.5;color:#bcb4c4}@media(max-width:740px){main{grid-template-columns:1fr;height:auto}#stage{height:57vh}aside{border:0}#mark{left:14px;top:14px}}
+</style></head><body><main><section id="stage"><canvas id="view" aria-label="音楽連動の生成映像"></canvas><div id="mark"><b>DYING SCREAM</b>MIC ISOLATION / 017</div><div id="micHud">MIC OFF</div><div id="morphHud"></div><button id="exitFull" hidden>全画面を終了（Esc）</button><div id="presentationHud"></div></section><aside><small>AUTONOMOUS AUDIOVISUAL ENGINE</small><h1>DARK SIGNAL</h1><div id="state" role="status">WebGL2を初期化中</div><input id="file" type="file" accept="audio/*" aria-label="音楽ファイル"><div id="fileName"></div><audio id="player" controls preload="metadata"></audio><button id="enableAudio">音声を有効化 / 再生</button><div id="audioState" role="status">音声入力待機</div><label>再生音量（解析と独立）<span id="volumeV">80%</span></label><input id="volume" type="range" min="0" max="100" value="80"><div class="row"><button id="mic">マイク：OFF</button><button id="demo">デモ反応：OFF</button></div><div id="micStatus" role="status"></div><small>Spaceでマイク切替。デモは解析信号のみ。</small><details open><summary>音声モニター</summary><pre id="audioDebug"></pre></details><button id="mutate">世界観を大変異 ↗</button><div id="mutationState" role="status">自律生成を準備中</div><progress id="mutationProgress" max="1" value="0" aria-label="世界観の変容進行率"></progress><button id="full">映像を全画面</button><div id="fullStatus" role="status">通常表示</div><button id="saveHTML">HTMLを保存</button><div id="saveStatus" role="status"></div><p><a href="mic_test.html" target="_blank" rel="noopener">独立マイクテストを別タブで開く</a></p><details id="diagnosticPanel" open><summary>マイク・実行環境の診断</summary><div class="row"><button id="refreshDiagnostics">診断を更新</button><button id="saveDiagnostics">診断JSONを保存</button></div><p id="diagnosticNotice">macOSの権限はWebページから取得できません。</p><pre id="diagnostics">診断を準備中</pre></details><label>生成素材の傾向</label><select id="direction"><option value="auto">AUTO / セッションごとに生成設計</option><option value="organic">REGGAE / DUB — 有機</option><option value="fractal">PSYTRANCE — フラクタル</option><option value="machine">TECHNO / HOUSE — 機械</option><option value="shard">METAL / INDUSTRIAL — 結晶・破砕</option><option value="energy">DRUM & BASS — エネルギー</option><option value="nebula">AMBIENT — 星雲</option><option value="tribal">WORLD / TRIBAL — 紋様</option></select><small>方向性は生成の偏りです。曲のジャンルを識別するAIではありません。</small>
+<label>動きの強さ <span id="motionV">78%</span></label><input id="motion" type="range" min="0" max="100" value="78"><label>ビート瞬発力 <span id="punchV">85%</span></label><input id="punch" type="range" min="0" max="100" value="85"><label>放射・折り返し構造 <span id="radialV">65%</span></label><input id="radial" type="range" min="0" max="100" value="65"><label>複雑さ <span id="detailV">75%</span></label><input id="detailSlider" type="range" min="0" max="100" value="75"><label>自動進化の強さ <span id="changeV">70%</span></label><input id="change" type="range" min="0" max="100" value="70"><label>黒の深さ <span id="blackV">55%</span></label><input id="black" type="range" min="0" max="100" value="55"><label>発光 <span id="glowV">75%</span></label><input id="glow" type="range" min="0" max="100" value="75"><label>FPS上限</label><select id="fps"><option value="20">20 FPS</option><option value="30" selected>30 FPS</option></select><label>解像度上限 / 負荷時は自動低下</label><select id="quality"><option value="480">軽量 / 幅480</option><option value="960" selected>標準 / 幅960</option><option value="1280">高画質 / 幅1280・最大720p</option></select><p id="tempo">音声入力待機 · BPM未確定</p><div id="bars" aria-label="10バンド周波数解析"></div><p id="detail"></p><p id="metrics">画面評価：入力待機</p><details><summary>操作・制限</summary><p>音楽ファイルを選択すると再生します。停止・シークはプレーヤーで操作できます。無音では暗転します。マイクにはHTTPSまたはlocalhostとブラウザの許可が必要です。</p><p>平面場・分岐成長・反応拡散・立体・体積の接続と描画方式が変異します。旧構造と履歴を保ち、数秒かけて連続変容します。素材の選択は描画方式を固定しません。</p></details></aside></main><script>
+'use strict';
+// Capture before meters, Blob audio URLs or diagnostics mutate the document.
+const pristineHTML='<!doctype html>\n'+document.documentElement.outerHTML;
+const $=id=>document.getElementById(id), clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),mix=(a,b,t)=>a+(b-a)*t, rand=(a=0,b=1)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)],value=id=>Number($(id).value)/100;
+const canvas=$('view'),gl=canvas.getContext('webgl2',{alpha:false,antialias:false,preserveDrawingBuffer:true});
+const status=t=>$('state').textContent=t;
+for(const id of ['volume','motion','punch','radial','detailSlider','change','black','glow'])$(id).oninput=()=>{$(id==='detailSlider'?'detailV':id+'V').textContent=$(id).value+'%';if(id==='volume'&&output)output.gain.value=value('volume');};
+const meters=Array.from({length:10},()=>{const el=document.createElement('i');$('bars').append(el);return el;});
+// One persistent graph; permission acquisition never waits for AudioContext.resume().
+let audio,analyser,mediaSource,output,outputAnalyser,silentSink,fft,wave,outputWave,url;
+let micStream=null,micSource=null,micOn=false,micPending=false,micDesired=false,demo=false;
+let micState='off',micError='',micRequest=null,micTimer=null,micPermission=null;
+let sourceMode='none',resumeTask=null,playEpoch=0,fileEpoch=0,outputRms=0,lastAudioUI=0;
+let audioInitializations=0,mediaSourceCreations=0,micRequests=0,micNodeCreations=0,stoppedTracks=0;
+const player=$('player'),MIC_WAIT_MS=15000,AUDIO_WAIT_MS=6000;
+const bands=new Float32Array(10),previous=new Float32Array(10),references=new Float32Array(10).fill(.008),raw=new Float32Array(10),edges=[30,60,105,175,280,450,750,1300,2300,4400,16000];
+let volume=0,energy=0,density=0,flux=0,beat=0,snare=0,bpm=120,bpmConfidence=0,beatPhase=0,lastBeat=-10,intervals=[],bassMean=0,fluxMean=.02,longEnergy=0,drop=false,clock=0,lastNow=0;
+function audioMessage(text){$('audioState').textContent=text;}
+function deadline(promise,ms,message){
+  return new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(new DOMException(message,'TimeoutError')),ms);
+    Promise.resolve(promise).then(value=>{clearTimeout(timer);resolve(value);},error=>{clearTimeout(timer);reject(error);});
+  });
+}
+function ensureAudio(){
+  if(audio){if(audio.state==='closed')throw new Error('音声処理が閉じられています。ページを再読み込みしてください。');return;}
+  const Context=window.AudioContext||window.webkitAudioContext;
+  if(!Context)throw new Error('このブラウザはWeb Audioに対応していません。対応ブラウザで開いてください。');
+  audio=new Context({latencyHint:'interactive'});audioInitializations++;
+  analyser=audio.createAnalyser();analyser.fftSize=4096;analyser.smoothingTimeConstant=.35;
+  fft=new Float32Array(analyser.frequencyBinCount);wave=new Float32Array(analyser.fftSize);
+  outputAnalyser=audio.createAnalyser();outputAnalyser.fftSize=1024;outputWave=new Float32Array(1024);
+  output=audio.createGain();output.gain.value=value('volume');
+  silentSink=audio.createGain();silentSink.gain.value=0;
+  analyser.connect(silentSink);silentSink.connect(audio.destination);
+  output.connect(outputAnalyser);outputAnalyser.connect(audio.destination);
+  // The zero-gain analysis sink keeps the analyser pulled, including on Safari.
+  // A microphone is connected ONLY to this silent analysis branch.
+  audio.onstatechange=()=>{
+    if(audio.state==='running')return;
+    if(sourceMode==='file'||micOn)audioMessage(`音声処理：${audio.state}。下の「音声を有効化 / 再生」を押してください。タブのミュート・出力先も確認してください。`);
+  };
+}
+function ensureMediaSource(){
+  ensureAudio();
+  if(!mediaSource){mediaSource=audio.createMediaElementSource(player);mediaSourceCreations++;mediaSource.connect(analyser);mediaSource.connect(output);}
+}
+function resumeAudio(force=false){
+  ensureAudio();
+  if(audio.state==='running')return Promise.resolve();
+  if(resumeTask&&!force)return resumeTask;
+  // Called synchronously inside the initiating gesture, not after getUserMedia/play.
+  let native;try{native=audio.resume();}catch(error){return Promise.reject(error);}
+  const task=deadline(native,AUDIO_WAIT_MS,'ブラウザが音声処理を開始していません。「音声を有効化 / 再生」をクリックしてください。');
+  resumeTask=task;task.then(()=>{if(resumeTask===task)resumeTask=null;},()=>{if(resumeTask===task)resumeTask=null;});
+  return task;
+}
+function renderMicState(state,detail=''){
+  micState=state;micError=detail;micOn=state==='on';micPending=state==='requesting';
+  const names={off:'OFF',requesting:'許可待ち',on:'ON',denied:'拒否された',missing:'デバイスなし',error:'エラー'};
+  $('mic').textContent='マイク：'+(state==='requesting'&&micRequest?.stream?'音声開始中':names[state]);$('mic').classList.toggle('active',micOn);
+  $('mic').setAttribute('aria-pressed',String(micOn));$('mic').dataset.state=state;
+  $('micStatus').textContent=detail||({off:'Space / ボタンでON。マイク音はスピーカーへ返しません。',requesting:'ブラウザのマイク許可表示を確認してください。再度Space / ボタンでキャンセルできます。',on:'入力ON · Space / ボタンでOFF'}[state]||'');
+  $('micHud').textContent=micOn?'● MIC ON':micPending?'◌ MIC 許可待ち':state==='off'?'MIC OFF':'MIC '+names[state];
+  $('micHud').classList.toggle('active',micOn);
+}
+function stopTracks(stream){if(stream){for(const track of stream.getTracks()){if(track.readyState!=='ended'){track.stop();stoppedTracks++;}}lastTracks=tracksOf(stream);}}
+function stopMic(){
+  micDesired=false;clearTimeout(micTimer);
+  if(micSource){micSource.disconnect();micSource=null;}
+  stopTracks(micStream);micStream=null;
+  if(micRequest){micRequest.cancelled=true;if(micRequest.stream)stopTracks(micRequest.stream);}
+  if(sourceMode==='mic'||sourceMode==='mic-request')sourceMode=!player.paused&&player.getAttribute('src')?'file':demo?'demo':'none';
+  micPhase='idle';renderMicState('off');
+}
+function micFailure(error,phase=micPhase){
+  lastMicFailure={name:error.name||'Error',message:error.message||'',phase,classification:classifyMicFailure(error,phase),at:new Date().toISOString()};
+  let state='error',help='';
+  switch(error.name){
+    case 'NotAllowedError':case 'PermissionDeniedError':
+      state=(phase==='resume'||phase==='audio-setup')?'error':'denied';help=(phase==='resume'||phase==='audio-setup')?'マイク取得ではなくWeb Audioの開始が拒否されました。「音声を有効化 / 再生」をクリックして再試行してください。':'入力取得が拒否されました。Safariのサイト設定が許可でも、macOSのマイク権限・origin・iframe制約が原因の場合があります。アドレスバー／サイト設定でマイクを許可し、再度ONにしてください。ボタンだけで許可画面が再表示されるとは限りません。';break;
+    case 'NotFoundError':case 'DevicesNotFoundError':
+      state='missing';help='マイクが見つかりません。接続・OSの入力デバイス設定を確認して再度ONにしてください。';break;
+    case 'NotReadableError':case 'TrackStartError':
+      help='マイクを開けません。他のアプリの占有、OSのプライバシー権限、接続を確認してください。';break;
+    case 'OverconstrainedError':help='マイクの入力条件に対応できません。別の入力デバイスを選択してください。';break;
+    case 'SecurityError':help='安全な接続または埋め込みページのマイク許可が必要です。HTTPS / localhostで直接開いてください。';break;
+    case 'TimeoutError':help=error.message;break;
+    case 'AbortError':help='マイク初期化が中断されました。入力デバイスの接続を確認し、再度ONにしてください。';break;
+    default:help=error.message||'入力デバイスとブラウザの設定を確認してください。';
+  }
+  if((error.name==='NotAllowedError'||error.name==='PermissionDeniedError')&&location.protocol==='file:')help+=' file://で実行しています。配布ZIPのStart DYING SCREAM.commandで http://127.0.0.1:8765/ から開き直してください。';
+  stopMic();renderMicState(state,`${error.name||'Error'} [${phase}]：${help}`);queueMicrotask(()=>refreshDiagnostics());
+}
+function armMicTimer(ticket){
+  clearTimeout(micTimer);
+  micTimer=setTimeout(()=>{
+    if(micRequest!==ticket||!micDesired)return;
+    micFailure(new DOMException('マイク許可が未完了です。ブラウザの権限表示・OS権限を確認してください。ページから許可画面は閉じられません。ONを押すと同じ未完了要求を再利用します。遅れて許可されても自動で入力開始しません。','TimeoutError'),ticket.phase);
+  },MIC_WAIT_MS);
+}
+function startMic(){
+  micPhase='environment';micDesired=true;sourceMode=!player.paused&&player.getAttribute('src')?'file':demo?'demo':'mic-request';renderMicState('requesting');
+  if(window.isSecureContext===false){micFailure(new DOMException('安全な接続が必要です。','SecurityError'),'environment');return;}
+  if(!navigator.mediaDevices?.getUserMedia){micFailure(new DOMException('getUserMediaが利用できません。HTTPS / localhostで直接開き、ブラウザ対応と権限を確認してください。file://はブラウザにより制約が異なります。','NotSupportedError'));return;}
+  const policy=microphonePolicy();
+  // Record the policy observation, but let the native capture API return its actual error.
+  // Permissions API is advisory; getUserMedia is the capture authority.
+  if(micRequest){try{micRequest.resumed=resumeAudio(true);micRequest.resumed.catch(()=>{});}catch(error){micFailure(error,'audio-setup');return;}armMicTimer(micRequest);return;}
+  const ticket={stream:null,resumed:null,setupError:null,phase:'capture',cancelled:false,restart:false};micPhase='capture';micRequest=ticket;armMicTimer(ticket);micRequests++;
+  let request;
+  // Match mic_test.html: invoke exact minimal capture before any audio graph setup.
+  try{request=navigator.mediaDevices.getUserMedia({audio:true});}catch(error){request=Promise.reject(error);}
+  try{ticket.resumed=resumeAudio(true);ticket.resumed.catch(()=>{});}catch(error){ticket.setupError=error;}
+  Promise.resolve(request).then(async stream=>{
+    ticket.stream=stream;ticket.phase=ticket.setupError?'audio-setup':'resume';micPhase=ticket.phase;
+    if(micDesired){clearTimeout(micTimer);renderMicState('requesting','マイク許可済み。音声処理の開始を待っています。開始できない場合は具体的なエラーを表示します。');}
+    if(!micDesired){stopTracks(stream);return;}
+    if(ticket.setupError)throw ticket.setupError;
+    // A Safari permission dialog can interrupt a Context that was resumed earlier.
+    // After capture is granted, re-check the actual state instead of trusting the old Promise.
+    if(audio.state!=='running'){ticket.resumed=resumeAudio(true);try{await ticket.resumed;}catch(error){if(audio?.state!=='running')throw error;}}
+    if(!micDesired){stopTracks(stream);return;}
+    ticket.phase='track-check';micPhase='track-check';
+    if(stream.getAudioTracks().every(t=>t.readyState==='ended')){if(ticket.cancelled){ticket.restart=true;return;}throw new DOMException('取得したマイクのTrackが既に終了しています。デバイスと権限を確認してください。','AbortError');}
+    if(audio.state!=='running')throw new Error('音声処理が開始していません。音声を有効化してから再度ONにしてください。');
+    clearTimeout(micTimer);setDemo(false);playEpoch++;player.pause();
+    ticket.phase='connect';micPhase='connect';micStream=stream;micSource=audio.createMediaStreamSource(stream);micNodeCreations++;
+    micSource.connect(analyser);sourceMode='mic';micPhase='input';renderMicState('on');queueMicrotask(()=>refreshDiagnostics());audioMessage('マイク解析中 · 音声出力なし');
+    for(const track of stream.getAudioTracks())track.onended=()=>{if(micStream===stream&&micOn)micFailure(new DOMException('マイクが切断されました。','NotReadableError'),'track-ended');};
+  }).catch(error=>{
+    stopTracks(ticket.stream);if(micDesired)micFailure(error,ticket.phase);
+  }).finally(()=>{
+    if(micRequest===ticket)micRequest=null;
+    // A rapid OFF/ON can stop a stream while resume is pending. Fulfil the latest ON.
+    if(micDesired&&micState==='requesting'&&ticket.restart)startMic();
+  });
+}
+function toggleMic(){if(micDesired||micOn||micPending)stopMic();else startMic();}
+$('mic').onclick=toggleMic;
+document.addEventListener('keydown',event=>{
+  if(event.code!=='Space'||event.isComposing)return;
+  const target=event.target;
+  if(target instanceof Element&&target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]'))return;
+  event.preventDefault();if(!event.repeat)toggleMic();
+});
+renderMicState('off');
+function setDemo(on){demo=on;if(on)sourceMode='demo';else if(sourceMode==='demo')sourceMode='none';$('demo').textContent='デモ反応：'+(on?'ON':'OFF');$('demo').classList.toggle('active',on);}
+$('demo').onclick=()=>{const on=!demo;if(on){stopMic();playEpoch++;player.pause();}setDemo(on);audioMessage(on?'デモ解析信号 · 音声出力なし':'音声入力待機');};
+function playbackFailure(error){
+  const reasons={NotAllowedError:'ブラウザが再生をブロックしました。「音声を有効化 / 再生」をクリックしてください。',NotSupportedError:'音声形式を再生できません。PCM WAV、MP3など対応形式を選択してください。',AbortError:'再生が中断されました。必要なら再生ボタンで再開してください。'};
+  audioMessage(`${error.name||'音声エラー'}：${reasons[error.name]||error.message}`);
+}
+async function startPlayback(){
+  if(!player.getAttribute('src')){audioMessage('音楽ファイルを選択してください。');return;}
+  const epoch=++playEpoch;stopMic();setDemo(false);sourceMode='file';
+  try{
+    ensureMediaSource();const resumed=resumeAudio(true);
+    // Both API calls happen before the first await, preserving the user gesture.
+    const played=deadline(player.play(),8000,'音声ファイルの再生開始が未完了です。形式とデコード状態を確認してください。');
+    await Promise.all([resumed,played]);
+    if(epoch!==playEpoch)return;
+    audioMessage(player.muted?'プレーヤーがミュート中です。プレーヤーのミュートを解除してください。':output.gain.value===0||player.volume===0?'出力音量が0です。音量を上げてください。':'音楽再生中 · 解析と出力を監視しています');
+  }catch(error){if(epoch===playEpoch)playbackFailure(error);}
+}
+$('file').onchange=event=>{
+  const file=event.target.files[0];if(!file)return;
+  fileEpoch++;playEpoch++;stopMic();setDemo(false);player.pause();
+  if(url)URL.revokeObjectURL(url);url=URL.createObjectURL(file);player.src=url;
+  $('fileName').textContent=file.name;startPlayback();
+};
+$('enableAudio').onclick=()=>{
+  if(micOn||micDesired){try{resumeAudio(true).then(()=>audioMessage('音声処理を再開しました')).catch(playbackFailure);}catch(error){playbackFailure(error);}}
+  else startPlayback();
+};
+player.addEventListener('play',()=>{
+  stopMic();setDemo(false);sourceMode='file';
+  try{ensureMediaSource();resumeAudio().catch(playbackFailure);}catch(error){playbackFailure(error);}
+});
+player.addEventListener('error',()=>{const names={1:'再生が中断されました',2:'ファイルの読み込みに失敗しました',3:'デコードに失敗しました',4:'非対応の音声形式です'};audioMessage(`MediaError ${player.error?.code||''}：${names[player.error?.code]||'再生できません'}。対応するPCM WAVまたはMP3で再試行してください。`);});
+// Diagnostics are observations, never substitutes for getUserMedia's actual result.
+let micPhase='idle',lastMicFailure=null,lastTracks=[];
+const diagnostics={permission:{state:'取得不可',detail:'未照会'},devices:{state:'取得不可',detail:'未照会',inputs:[],at:null},updated:null};
+let lastDiagnosticPaint=0,refreshingDiagnostics=false;
+function featurePolicyState(feature='microphone'){
+  try{
+    const modern=document.permissionsPolicy,policy=modern||document.featurePolicy;
+    if(!policy?.allowsFeature)return {allowed:null,detail:'取得不可（Permissions Policy APIなし）'};
+    const features=typeof policy.features==='function'?policy.features():null;
+    if(features&&!features.includes(feature))return {allowed:null,detail:'取得不可（microphone非対応）'};
+    const allowed=policy.allowsFeature(feature);
+    // Legacy implementations without a feature list cannot distinguish an unknown feature.
+    if(!modern&&!features&&!allowed)return {allowed:null,detail:'取得不可（旧APIのfalseを拒否と断定しない）'};
+    return {allowed,detail:allowed?'API上は許可（実際の取得許可を保証しない）':'この文書のPermissions Policyで禁止'};
+  }catch(error){return {allowed:null,detail:`取得不可（${error.name}: ${error.message}）`};}
+}
+function microphonePolicy(){return featurePolicyState('microphone');}
+function insideFrame(){try{return window.self!==window.top;}catch{return true;}}
+function tracksOf(stream){
+  if(!stream)return [];
+  return stream.getAudioTracks().map(track=>{
+    let settings={};try{const s=track.getSettings?.()||{};for(const k of ['sampleRate','channelCount','echoCancellation','noiseSuppression','autoGainControl'])if(k in s)settings[k]=s[k];}catch{}
+    return {label:track.label||'取得不可（名前非公開）',readyState:track.readyState,enabled:track.enabled,muted:track.muted,settings};
+  });
+}
+function classifyMicFailure(error,phase){
+  if(phase==='resume'||phase==='audio-setup')return 'Web Audioの開始／初期化（マイク権限とは別）';
+  if(phase==='environment'||phase==='policy')return '実行環境の制約';
+  if(error.name==='NotFoundError')return '入力デバイス未検出';
+  if(error.name==='NotAllowedError'||error.name==='PermissionDeniedError'){
+    if(microphonePolicy().allowed===false)return '実行環境：Permissions Policyが入力を禁止（実APIも拒否）';
+    if(location.protocol==='file:')return 'file://の実行制約またはブラウザ／OS権限（APIのみでは確定不可）';
+    if(insideFrame())return 'iframeの制約またはブラウザ／OS権限（診断結果を確認）';
+    return 'ブラウザ／OSの取得許可（どちらの設定かは取得不可）';
+  }
+  return '入力取得／処理エラー（詳細を確認）';
+}
+function diagnosticSnapshot(){
+  const policy=microphonePolicy();
+  return {
+    version:17,url:location.href,origin:location.origin,effectiveOrigin:typeof window.origin==='string'?window.origin:'取得不可',protocol:location.protocol,secureContext:window.isSecureContext??'取得不可',
+    iframe:insideFrame(),policy,
+    mediaDevices:!!navigator.mediaDevices,getUserMedia:typeof navigator.mediaDevices?.getUserMedia==='function',
+    webAudio:!!(window.AudioContext||window.webkitAudioContext),audioContext:audio?(audio.state??'取得不可'):'未作成',
+    webGL2:!!gl,webGLContextLost:gl?gl.isContextLost():null,renderer:{ready:!!active,compiled:compileCount,errors:[...compileErrors]},
+    micState,micPhase,micDesired,permissionRequestInFlight:!!micRequest,
+    lastError:lastMicFailure,activeTracks:tracksOf(micStream),pendingTracks:tracksOf(micRequest?.stream),lastTracks,
+    permission:diagnostics.permission,devices:diagnostics.devices,updated:diagnostics.updated,
+    macOSPermission:'取得不可（WebページからmacOSのプライバシー設定は読めません）',
+    siteSettings:'取得不可（Permissions APIの観測値とSafari設定画面を同一視しません）',
+    sourceMode,inputRms:volume,outputRms,fullscreen:presentationSnapshot()
+  };
+}
+function paintDiagnostics(force=false){
+  const now=performance.now();if(!force&&(!$('diagnosticPanel').open||now-lastDiagnosticPaint<1000))return;
+  lastDiagnosticPaint=now;const d=diagnosticSnapshot();
+  const inputs=d.devices.inputs.map((device,i)=>`${i+1}. ${device.label||'名前は取得不可（未許可／ブラウザ制限の可能性）'}`).join('\n')||'一覧0件（許可前は非表示の場合あり。未検出と断定不可）';
+  $('diagnostics').textContent=`URL: ${d.url}\nURL origin: ${d.origin}\n文書origin: ${d.effectiveOrigin}\nSecure Context: ${d.secureContext}\niframe内: ${d.iframe}\nPermissions Policy: ${d.policy.detail}\nMediaDevices: ${d.mediaDevices} / getUserMedia: ${d.getUserMedia}\nWeb Audio: ${d.webAudio} / Context: ${d.audioContext}\nWebGL2: ${d.webGL2} / context lost: ${d.webGLContextLost??'取得不可'} / 描画準備: ${d.renderer.ready} / GLSL: ${d.renderer.compiled} / エラー: ${d.renderer.errors.join('; ')||'なし'}\nマイク: ${d.micState} / 処理段階: ${d.micPhase}\n未完了要求: ${d.permissionRequestInFlight}\n権限観測: ${d.permission.state} — ${d.permission.detail}\nSafari設定画面: ${d.siteSettings}\nmacOS権限: ${d.macOSPermission}\n最終エラー: ${d.lastError?JSON.stringify(d.lastError,null,2):'なし（許可済みを意味しません）'}\n使用中Track: ${JSON.stringify(d.activeTracks)}\n取得途中Track: ${JSON.stringify(d.pendingTracks)}\n最後に停止／終了したTrack: ${JSON.stringify(d.lastTracks)}\n音声入力一覧: ${d.devices.state} — ${d.devices.detail}\n${inputs}\n一覧取得時: ${d.devices.at||'取得不可'}\n全画面: ${d.fullscreen.mode} / nativeElement ${d.fullscreen.nativeElement} / standard API ${d.fullscreen.standardRequest} (enabled ${d.fullscreen.standardEnabled??'取得不可'}) / webkit API ${d.fullscreen.webkitRequest} / ${d.fullscreen.lastError||'エラーなし'}\n${location.protocol==='file:'?'file://です。secure=trueでもSafariのマイク取得を保証しません。ZIP内の起動スクリプトでhttp://127.0.0.1:8765/から開いてください。':''}`;
+}
+async function refreshPermission(){
+  if(micPermission)micPermission.onchange=null;micPermission=null;
+  if(!navigator.permissions?.query){diagnostics.permission={state:'取得不可',detail:'Permissions APIなし（Safariで未対応の場合があります）'};return;}
+  try{
+    const permission=await deadline(navigator.permissions.query({name:'microphone'}),2000,'権限照会が未完了');
+    if(micPermission)micPermission.onchange=null;micPermission=permission;
+    diagnostics.permission={state:permission.state,detail:'Permissions APIの観測値。getUserMediaの実行可否とは別'};
+    permission.onchange=()=>{diagnostics.permission={state:permission.state,detail:'Permissions API変更通知（取得の成否は別）'};paintDiagnostics(true);};
+  }catch(error){diagnostics.permission={state:'取得不可',detail:`${error.name}: ${error.message}`};}
+}
+async function refreshDevices(){
+  if(!navigator.mediaDevices?.enumerateDevices){diagnostics.devices={state:'取得不可',detail:'enumerateDevices APIなし',inputs:[],at:null};return;}
+  try{
+    const devices=await deadline(navigator.mediaDevices.enumerateDevices(),2500,'デバイス一覧の照会が未完了');
+    diagnostics.devices={state:'取得済み',detail:'名前・一覧はブラウザにより非公開の場合あり',inputs:devices.filter(d=>d.kind==='audioinput').map(d=>({label:d.label||'',deviceId:d.deviceId?'取得済み（ID省略）':'取得不可'})),at:new Date().toISOString()};
+  }catch(error){diagnostics.devices={state:'取得不可',detail:`${error.name}: ${error.message}`,inputs:[],at:null};}
+}
+async function refreshDiagnostics(){
+  if(refreshingDiagnostics)return;refreshingDiagnostics=true;
+  try{await Promise.allSettled([refreshPermission(),refreshDevices()]);diagnostics.updated=new Date().toISOString();paintDiagnostics(true);}
+  finally{refreshingDiagnostics=false;}
+}
+$('refreshDiagnostics').onclick=refreshDiagnostics;
+$('diagnosticPanel').addEventListener('toggle',()=>paintDiagnostics(true));
+navigator.mediaDevices?.addEventListener?.('devicechange',()=>refreshDiagnostics());
+$('saveDiagnostics').onclick=()=>{
+  const report=JSON.stringify(diagnosticSnapshot(),null,2);downloadBlob(new Blob([report],{type:'application/json;charset=utf-8'}),'DYING_SCREAM_v17_diagnostics.json');
+  $('diagnosticNotice').textContent='診断JSONを保存しました。URLやデバイス名が含まれるので、共有前に内容を確認してください。';
+};
+queueMicrotask(()=>refreshDiagnostics());
+
+// Standard and desktop Safari-prefixed element fullscreen; never video-only APIs.
+let presentationMode='window',presentationDesired=false,presentationPending=false,presentationTimer=null,presentationAttempt=0,lastFullscreenError='';
+const stage=$('stage');
+function nativeFullscreenElement(){return document.fullscreenElement||document.webkitFullscreenElement||null;}
+function presentationSnapshot(){return {mode:presentationMode,pending:presentationPending,standardRequest:typeof stage.requestFullscreen==='function',webkitRequest:typeof stage.webkitRequestFullscreen==='function',nativeElement:!!nativeFullscreenElement(),standardEnabled:document.fullscreenEnabled??null,webkitEnabled:document.webkitFullscreenEnabled??null,lastError:lastFullscreenError};}
+function fitPresentation(){requestAnimationFrame(()=>{if(gl&&active&&!gl.isContextLost())resize();});}
+function paintPresentation(){
+  const activeMode=presentationMode!=='window';document.body.classList.toggle('presenting',activeMode);document.body.classList.toggle('css-fullscreen',presentationMode==='css');
+  const label=presentationMode==='css'?(insideFrame()?'CSS擬似全画面（iframe内のみ）':'CSS擬似全画面（ブラウザ枠あり）'):presentationMode==='native'?'OS／ブラウザ全画面':presentationPending?'全画面へ移行中':'通常表示';
+  $('full').textContent=activeMode?'全画面を解除':'映像を全画面';$('full').setAttribute('aria-pressed',String(activeMode));
+  $('presentationHud').textContent=activeMode?label:'';$('fullStatus').textContent=label+(lastFullscreenError?' / '+lastFullscreenError:'');
+  $('exitFull').hidden=!activeMode;fitPresentation();
+}
+function enterCSSFullscreen(reason){
+  if(!presentationDesired)return;clearTimeout(presentationTimer);presentationPending=false;presentationMode='css';
+  lastFullscreenError=(reason||'ネイティブFullscreen APIを利用できません')+(insideFrame()?' iframe内では埋め込み枠内の表示です。別タブで直接開いてください。':'');paintPresentation();
+}
+function exitPresentation(){
+  presentationDesired=false;presentationAttempt++;clearTimeout(presentationTimer);presentationPending=false;
+  if(nativeFullscreenElement()){
+    const exit=document.exitFullscreen||document.webkitExitFullscreen;
+    if(!exit){lastFullscreenError='全画面解除APIがありません。Escで解除してください。';paintPresentation();return;}
+    try{const result=exit.call(document);if(result?.catch)result.catch(error=>{lastFullscreenError=`解除失敗 ${error.name}: ${error.message}。Escで解除してください。`;paintPresentation();});}
+    catch(error){lastFullscreenError=`解除失敗 ${error.name}: ${error.message}。Escで解除してください。`;paintPresentation();}
+  }else{presentationMode='window';paintPresentation();}
+}
+function syncPresentation(){
+  if(nativeFullscreenElement()===stage){
+    clearTimeout(presentationTimer);presentationPending=false;presentationMode='native';
+    if(!presentationDesired){exitPresentation();return;}
+  }else if(presentationMode==='native'){
+    presentationDesired=false;presentationPending=false;presentationMode='window';clearTimeout(presentationTimer);
+  }
+  paintPresentation();
+}
+function togglePresentation(){
+  if(presentationMode!=='window'||presentationPending||nativeFullscreenElement()){exitPresentation();return;}
+  presentationDesired=true;presentationPending=true;lastFullscreenError='';const attempt=++presentationAttempt;paintPresentation();
+  if(featurePolicyState('fullscreen').allowed===false){enterCSSFullscreen('Permissions PolicyがFullscreen APIを禁止しています。');return;}
+  const request=stage.requestFullscreen||stage.webkitRequestFullscreen;
+  if(!request){enterCSSFullscreen('Fullscreen API未対応のためCSSで表示しています。OSの全画面ではありません。');return;}
+  try{
+    // This call remains synchronous inside the actual button/keyboard gesture.
+    const result=request.call(stage);
+    if(result?.then)result.then(()=>{if(attempt===presentationAttempt)syncPresentation();},error=>{if(attempt===presentationAttempt)enterCSSFullscreen(`${error.name}: ${error.message}。CSS擬似全画面に切り替えました。`);});
+    presentationTimer=setTimeout(()=>{if(attempt===presentationAttempt&&presentationDesired&&nativeFullscreenElement()!==stage)enterCSSFullscreen('Fullscreen APIの状態変化を確認できないためCSS擬似全画面に切り替えました。');},1800);
+  }catch(error){enterCSSFullscreen(`${error.name}: ${error.message}。CSS擬似全画面に切り替えました。`);}
+}
+$('full').onclick=togglePresentation;$('exitFull').onclick=togglePresentation;
+for(const type of ['fullscreenchange','webkitfullscreenchange'])document.addEventListener(type,syncPresentation);
+for(const type of ['fullscreenerror','webkitfullscreenerror'])document.addEventListener(type,()=>{if(presentationPending&&presentationDesired)enterCSSFullscreen('fullscreenerror：APIが拒否されました。CSS擬似全画面に切り替えました。');});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&(presentationMode!=='window'||presentationPending)){event.preventDefault();exitPresentation();}});
+window.addEventListener('resize',fitPresentation);document.addEventListener('visibilitychange',()=>{paintDiagnostics(true);fitPresentation();});
+if(window.ResizeObserver)new ResizeObserver(fitPresentation).observe(stage);
+
+function downloadBlob(blob,filename){
+  const href=URL.createObjectURL(blob),link=document.createElement('a');link.href=href;link.download=filename;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(href),60000);
+}
+$('saveHTML').onclick=()=>{
+  try{
+    if(!pristineHTML.includes('window.vj=')||!pristineHTML.includes('<canvas'))throw new Error('起動時のHTMLを確認できません');
+    downloadBlob(new Blob([pristineHTML],{type:'text/html;charset=utf-8'}),'DYING_SCREAM_AUTO_VJ_v17_MIC_ISOLATION.html');
+    $('saveStatus').textContent='起動時のスタンドアロンHTMLをダウンロード要求しました。ブラウザのダウンロード一覧を確認してください。';
+  }catch(error){$('saveStatus').textContent=`保存失敗 ${error.message}。配布済みHTMLまたはlocalhostの /download から取得してください。`;}
+};
+
+function updateAudioUI(now){
+  paintDiagnostics();
+  if(now-lastAudioUI<200)return;lastAudioUI=now;
+  $('audioDebug').textContent=`入力 ${sourceMode} / MIC ${micState} / Context ${audio?.state||'未作成'}\n入力RMS ${volume.toFixed(4)} → 出力直前RMS ${outputRms.toFixed(4)}\nGain ${output?.gain.value.toFixed(2)||'—'} / muted ${player.muted} / player音量 ${player.volume.toFixed(2)} / ${player.paused?'一時停止':'再生'} ${player.currentTime.toFixed(1)}s\nBPM ${bpmConfidence>.25?Math.round(bpm):'未確定'} / beat ${beat.toFixed(2)} / 激しさ ${energy.toFixed(2)}\n10帯域 ${Array.from(bands,v=>v.toFixed(2)).join(' ')}\n${location.protocol} / secure ${window.isSecureContext}`;
+}
+function analyze(dt){raw.fill(0);let rms=0;if(demo){const phase=clock*2.2,kick=Math.exp(-((phase%1)*13)),hat=Math.exp(-(((phase*2+.5)%1)*23));for(let i=0;i<10;i++)raw[i]=.002+(i<3?.12*kick:.05*hat)+.012*(.5+.5*Math.sin(clock*(.4+i*.13)+i));rms=.035+.13*kick;}else if(audio?.state==='running'&&(micOn||sourceMode==='file'&&!player.paused)){analyser.getFloatFrequencyData(fft);analyser.getFloatTimeDomainData(wave);for(let i=0;i<wave.length;i++)rms+=wave[i]*wave[i];rms=Math.sqrt(rms/wave.length);const hz=audio.sampleRate/analyser.fftSize;for(let i=0;i<10;i++){const lo=Math.max(1,Math.floor(edges[i]/hz)),hi=Math.min(fft.length,Math.ceil(edges[i+1]/hz));let sum=0;for(let j=lo;j<hi;j++)sum+=Math.pow(10,fft[j]/10);raw[i]=Math.sqrt(sum/Math.max(1,hi-lo));}}
+if(outputAnalyser&&audio.state==='running'){outputAnalyser.getFloatTimeDomainData(outputWave);let power=0;for(const sample of outputWave)power+=sample*sample;outputRms=Math.sqrt(power/outputWave.length);}else outputRms=0;
+volume=mix(volume,rms,1-Math.exp(-dt*(rms>volume?22:9)));flux=0;let occupied=0;for(let i=0;i<10;i++){const v=raw[i];references[i]=Math.max(.0015,mix(references[i],v,1-Math.exp(-dt*(v>references[i]?2.5:.22))));const normalized=clamp(v/(v+references[i]*1.35)*1.35)*clamp(rms/.006);bands[i]=mix(bands[i],normalized,1-Math.exp(-dt*(normalized>bands[i]?28:10)));flux+=Math.max(0,bands[i]-previous[i]);previous[i]=bands[i];occupied+=bands[i]>.32?1:0;meters[i].style.height=(2+bands[i]*96)+'%';}
+const bass=(bands[0]+bands[1]+bands[2])/3;beat*=Math.exp(-dt*11);snare*=Math.exp(-dt*15);const onset=flux>Math.max(.08,fluxMean*1.8)&&bass>bassMean*.85;
+if(onset&&clock-lastBeat>.27&&rms>.006){const interval=clock-lastBeat;if(interval>.28&&interval<1.35){intervals.push(interval);if(intervals.length>16)intervals.shift();const sorted=[...intervals].sort((a,b)=>a-b),median=sorted[Math.floor(sorted.length/2)];let estimate=60/median;while(estimate<65)estimate*=2;while(estimate>190)estimate/=2;bpm=mix(bpm,estimate,.22);bpmConfidence=clamp(intervals.length/8)*clamp(1-(sorted.at(-1)-sorted[0])/median);}lastBeat=clock;beat=1;beatPhase=0;snare=clamp((bands[5]+bands[6]+bands[7])/2);}
+beatPhase=(beatPhase+dt*bpm/60)%1;bassMean=mix(bassMean,bass,1-Math.exp(-dt*3));fluxMean=mix(fluxMean,flux,1-Math.exp(-dt*2));density=mix(density,occupied/10,1-Math.exp(-dt*2));energy=mix(energy,clamp(rms*3+flux*2+density*.25),1-Math.exp(-dt*4));drop=volume>.04&&volume>longEnergy*2.5&&clock-lastDrop>10&&clock>8;longEnergy=mix(longEnergy,volume,1-Math.exp(-dt*.15));}
+let lastDrop=-20;
+// A session assembles a typed, bounded graph; no finished-scene playlist.
+const clone = object => JSON.parse(JSON.stringify(object));
+const float = n => Number(n).toFixed(5);
+const shuffled = array => {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(rand(0, i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+};
+const SOURCE_OPS = ['noise', 'cells', 'recursive', 'spiral', 'growth', 'chemical', 'wave'];
+const COMBINE_OPS = ['union', 'carve', 'modulate', 'interfere'];
+const DOMAIN_OPS = ['rotate', 'curl', 'fold', 'tile', 'logpolar', 'shear'];
+const METHODS = ['relief', 'contours', 'surface', 'volume'];
+const LAYOUTS = ['drift', 'plane', 'tunnel', 'orbit'];
+const labels = {relief:'場の凹凸', contours:'干渉・紋様', surface:'立体・空間', volume:'体積場'};
+const biases = {
+  organic:['growth','chemical','noise'], fractal:['recursive','spiral','cells'],
+  machine:['cells','wave','recursive'], shard:['recursive','cells','wave'],
+  energy:['spiral','wave','chemical'], nebula:['noise','chemical','wave'],
+  tribal:['growth','spiral','recursive']
+};
+let graph = null, active = null, pending = null, queuedMajor = false;
+let generation = 0, mutationCount = 0, compileCount = 0, compileErrors = [];
+let transition = 1, transitionStart = 0, transitionDuration = 7;
+let nextMutation = rand(8, 12), nextMeta = rand(19, 25), nextRoute = rand(8, 16);
+let nextMaterial = rand(8, 17), nextCamera = rand(11, 22), nextFeedback = rand(9, 18);
+let visualTime = 0, shaderVersion = '', evolutionLog = [], rejections = 0;
+let route = shuffled(Array.from({length:10}, (_,i) => i));
+const routed = new Float32Array(10);
+const material = {hue:rand(0,6.28), roughness:.45, light:rand(-1,1)};
+let materialTarget = {...material};
+const camera = {x:rand(-.4,.4), y:rand(-.3,.3), zoom:rand(.8,1.3), angle:rand(-.3,.3)};
+let cameraTarget = {...camera};
+const memory = {amount:rand(.12,.4), curl:rand(-1,1)};
+let memoryTarget = {...memory};
+let stateSteps = 0, feedbackFrames = 0, materialChanges = 0, cameraChanges = 0;
+let droppedRequests = 0;
+let manualMutationClicks=0,mutationPhase='idle',lastMutationUI=0,queuedMajorOrigin='auto',lastMutationOrigin='auto';
+let inkFloor=.035,inkTarget=.035,exposure=1,exposureTarget=1;
+
+function sourcePool() {
+  const bias = biases[$('direction').value];
+  if (bias) return [...SOURCE_OPS, ...bias, ...bias];
+  const audioBias = energy > .6 ? ['cells','recursive','wave'] : density < .25 ? ['noise','growth'] : ['chemical','spiral'];
+  return [...SOURCE_OPS, ...audioBias];
+}
+function sourceNode(index, pool = sourcePool()) {
+  return {op:pick(pool), domain:Math.floor(rand(0,index+1)), frequency:rand(.7,2.8), phase:rand(-3,3), seed:rand(0,30)};
+}
+function methodPool() {
+  return [...METHODS,...(energy>.55?['surface','contours']:density<.28?['volume','relief']:['relief','contours'])];
+}
+function constrainGraph(g) {
+  // Keep at least one reachable structural source; waves/noise alone flatten the hierarchy.
+  const sources=[],visited=new Set();
+  function visit(i){if(visited.has(i))return;visited.add(i);const n=g.fields[i];if(COMBINE_OPS.includes(n.op)){visit(n.a);visit(n.b);}else sources.push(i);}
+  visit(g.root);
+  const structural=['cells','recursive','growth','chemical'];
+  if(!sources.some(i=>structural.includes(g.fields[i].op))){
+    const i=sources[sources.length-1];g.fields[i].op=pick(structural);
+  }
+  if(sources.length>1&&new Set(sources.map(i=>g.fields[i].op)).size===1){
+    const i=sources[0];g.fields[i].op=pick(SOURCE_OPS.filter(op=>op!==g.fields[i].op));
+  }
+  return g;
+}
+function newGraph() {
+  const domains = Array.from({length:3}, (_,i) => ({op:pick(DOMAIN_OPS), input:i, k:rand(.4,1.4)}));
+  const a = sourceNode(3), b = sourceNode(3), c = sourceNode(3);
+  a.domain=domains.length;
+  const fields = [a,b,{op:pick(COMBINE_OPS),a:0,b:1},c,{op:pick(COMBINE_OPS),a:2,b:3}];
+  const main = pick(methodPool()), layout = pick(LAYOUTS);
+  return constrainGraph({
+    domains, fields, root:4,
+    render:{main, overlay:pick(['relief','contours']), weight:rand(.12,.32), join:pick(['screen','maximum','etch'])},
+    composition:{layout, scale:rand(.75,1.7), rotation:rand(-1,1), offset:[rand(-1,1),rand(-.7,.7)]},
+    growth:{seed:Math.floor(rand(1,1e8)), angle:rand(.25,.7), shrink:rand(.67,.78), depth:Math.floor(rand(5,8))},
+    sculpture:{kind:pick(['crystal','membrane','lattice']), fold:Math.floor(rand(3,8)), twist:rand(-.7,.7)},
+    mutation:'session assembly'
+  });
+}
+function mutateGraph(parent, major) {
+  const next = clone(parent), actions = [];
+  if (major) {
+    // Inherit the actual graph and alter its design axis, instead of resetting it.
+    next.render.main = pick(methodPool().filter(x => x !== parent.render.main));
+    next.composition.layout = pick(LAYOUTS.filter(x => x !== parent.composition.layout));
+    next.composition.offset = [rand(-1.2,1.2),rand(-.8,.8)];
+    next.composition.scale = rand(.65,1.9);
+    next.render.overlay = pick(['relief','contours']);
+    next.render.join = pick(['screen','maximum','etch']);
+    next.sculpture.kind = pick(['crystal','membrane','lattice']);
+    actions.push('render method', 'composition');
+  }
+  const choice = pick(['insert','remove','replace','rewire','domain','recombine','growth']);
+  if (choice === 'insert' && next.fields.length < 8) {
+    const i=next.fields.length;
+    next.fields.push(sourceNode(Math.min(next.domains.length,3)));
+    next.fields.push({op:pick(COMBINE_OPS),a:next.root,b:i});
+    next.root=i+1;
+  } else if (choice === 'remove' && next.fields.length > 5) {
+    // Remove a complete final branch; all references remain acyclic.
+    const root=next.fields[next.root];
+    next.root=next.fields.length-3;
+    next.fields=next.fields.slice(0,-2);
+  } else if (choice === 'rewire') {
+    const indices=next.fields.map((f,i)=>COMBINE_OPS.includes(f.op)?i:-1).filter(i=>i>1);
+    const i=pick(indices), f=next.fields[i];
+    f.b=pick(Array.from({length:i},(_,j)=>j).filter(j=>j!==f.b));
+  } else if (choice === 'domain') {
+    if (next.domains.length < 5 && Math.random()<.5) {
+      next.domains.push({op:pick(DOMAIN_OPS),input:next.domains.length,k:rand(.4,1.4)});
+      next.fields[0].domain=next.domains.length;
+    } else {
+      const i=Math.floor(rand(0,next.domains.length));
+      next.domains[i].op=pick(DOMAIN_OPS.filter(x=>x!==next.domains[i].op));
+      next.domains[i].input=Math.floor(rand(0,i+1));
+      next.fields[0].domain=i+1;
+    }
+  } else if (choice === 'recombine') {
+    const i=pick(next.fields.map((f,i)=>COMBINE_OPS.includes(f.op)?i:-1).filter(i=>i>=0));
+    next.fields[i].op=pick(COMBINE_OPS.filter(x=>x!==next.fields[i].op));
+  } else if (choice === 'growth') {
+    next.growth.angle=rand(.25,.75);
+    next.growth.seed=Math.floor(rand(1,1e8));
+    next.growth.depth=Math.floor(rand(5,8));
+    next.fields[0].op='growth';
+  } else {
+    const i=pick(next.fields.map((f,i)=>SOURCE_OPS.includes(f.op)?i:-1).filter(i=>i>=0));
+    const old=next.fields[i];
+    next.fields[i]={...sourceNode(next.domains.length),op:pick(sourcePool().filter(x=>x!==old.op))};
+  }
+  if (major) {
+    const i=pick(next.fields.map((f,i)=>SOURCE_OPS.includes(f.op)?i:-1).filter(i=>i>=0));
+    next.fields[i].op=pick(sourcePool().filter(x=>x!==parent.fields[i]?.op));
+  }
+  next.mutation=[...actions,choice].join(' + ');
+  return constrainGraph(next);
+}
+
+const vertex = `#version 300 es
+precision highp float;
+void main(){vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);gl_Position=vec4(p*2.-1.,0.,1.);}`;
+const library = `#version 300 es
+precision highp float;
+out vec4 frag;
+uniform vec2 resolution;
+uniform float time,level,impact,energy,density,complexity,radial,black,glow;
+uniform float hue,roughness,lightAngle;
+uniform vec4 camera;
+uniform float bands[10];
+uniform sampler2D noiseTex,stateTex,growthTex;
+mat2 rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);}
+float n2(vec2 p){return texture(noiseTex,p/128.).r;}
+float n3(vec3 p){float z=floor(p.z),f=fract(p.z);f=f*f*(3.-2.*f);return mix(n2(p.xy+vec2(37.,17.)*z),n2(p.xy+vec2(37.,17.)*(z+1.)),f);}
+float fbm(vec3 p){return n3(p)*.57+n3(p*2.13+13.)*.28+n3(p*4.37-7.)*.15;}
+float cell(vec2 p){vec2 i=floor(p),f=fract(p);float d=2.,d2=2.;for(int x=-1;x<=1;x++)for(int y=-1;y<=1;y++){vec2 o=vec2(x,y);vec2 s=texture(noiseTex,(i+o+.5)/128.).gb;float v=length(o+s*.8+.1-f);if(v<d){d2=d;d=v;}else d2=min(d2,v);}return (d2-d)*3.-.55;}
+float recursive(vec3 p){float scale=1.,d=2.;for(int i=0;i<6;i++){p=abs(p)-vec3(.72,.48,.3);p.xy=rot(.6+radial*.4)*p.xy;p.yz=rot(.37)*p.yz;p*=1.74;scale*=1.74;d=min(d,length(p.xy)/scale);}return exp(-d*7.)*2.-1.;}
+float box(vec3 p,vec3 b){vec3 q=abs(p)-b;return length(max(q,0.))+min(max(q.x,max(q.y,q.z)),0.);}
+vec3 pigment(float h){float p=hue*.72+h*.28+bands[7]*.12;float red=pow(.5+.5*cos(p),4.);float violet=pow(.5+.5*cos(p+2.1),4.);float green=pow(.5+.5*cos(p+4.2),6.);vec3 color=(vec3(.86,.045,.08)*red+vec3(.35,.07,.67)*violet+vec3(.22,.64,.065)*green)/max(.18,red+violet+green);float bone=pow(max(0.,sin(h*1.2+p*.4)),12.)*.35;return mix(color,vec3(.57,.71,.77),bone);}
+vec3 relief(vec3 field,vec2 uv){float h=field.x*.5+.5;vec3 normal=normalize(vec3(-dFdx(field.x)*resolution.y*.035,-dFdy(field.x)*resolution.y*.035,1.));vec3 light=normalize(vec3(sin(lightAngle+bands[3]*.25),.65,1.));float diffuse=max(0.,dot(normal,light));float spec=pow(max(0.,dot(normal,normalize(light+vec3(0,0,1)))),mix(10.,55.,roughness));float mask=smoothstep(.23+black*.12,.76,h);float grain=.65+.25*sin(field.y*13.+field.z*5.+bands[6])+.1*sin(field.y*71.+field.z*39.);vec3 color=pigment(field.z*2.+h*1.5+bands[7]*.3);return color*mask*(.18+diffuse*.8)*grain+color*pow(mask,4.)*glow*.32+vec3(.55,.75,.9)*spec*mask*.35;}
+vec3 contours(vec3 field,vec2 uv){float phase=field.x*(7.+complexity*10.)+field.y*2.;float ridge=pow(.5+.5*cos(phase),2.5);float hierarchy=.3+.7*smoothstep(-.7,.65,field.z+field.x*.4);float plate=smoothstep(-.25,.65,field.x)*(.6+.4*sin(field.y*6.));float mask=smoothstep(.15+black*.14,.75,ridge*hierarchy+plate*.36);vec3 normal=normalize(vec3(-dFdx(field.x)*resolution.y*.025,-dFdy(field.x)*resolution.y*.025,1.));float shade=.3+.7*max(0.,dot(normal,normalize(vec3(-.5,.7,1.))));float micro=.8+.2*sin(field.z*24.+field.y*9.);vec3 color=pigment(field.x*1.4+field.z*2.+bands[8]*.5);return color*mask*(shade+glow*ridge*.35+impact*.12)*micro;}
+`;
+function domainCode(g) {
+  let code='vec3 d0=p;\n';
+  g.domains.forEach((d,i)=>{
+    const q=`d${i+1}`, k=float(d.k);
+    code+=`vec3 ${q}=d${d.input};\n`;
+    switch(d.op){
+      case 'rotate':code+=`${q}.xy=rot(${k}+time*.045)*${q}.xy;`;break;
+      case 'curl':code+=`${q}.xy+=sin(${q}.yx*${k}*2.+time*.22)*(.15+bands[0]*.13);`;break;
+      case 'fold':code+=`{float a=atan(${q}.y,${q}.x),r=length(${q}.xy),n=3.+floor(${k}*3.+radial*3.);a=abs(mod(a+3.14159/n,6.28318/n)-3.14159/n);${q}.xy=vec2(cos(a),sin(a))*r-vec2(.35,0.);}`;break;
+      case 'tile':code+=`${q}.xy=sin(${q}.xy*${k}*1.6);`;break;
+      case 'logpolar':code+=`${q}.xy=vec2(log(length(${q}.xy)+.2),atan(${q}.y,${q}.x)*1.4);`;break;
+      case 'shear':code+=`${q}.x+=sin(${q}.y*2.+time*.12)*${k}*.4;${q}.yz=rot(${k}*.4)*${q}.yz;`;break;
+    }
+    code+='\n';
+  });
+  return code;
+}
+function fieldCode(g) {
+  let code='vec3 fields(vec3 p){p.z+=bands[5]*.12;\n'+domainCode(g);
+  g.fields.forEach((node,i)=>{
+    const q=`d${Math.min(node.domain||0,g.domains.length)}`, k=float(node.frequency||1), phase=float(node.phase||0), seed=float(node.seed||0);
+    let expression='0.';
+    switch(node.op){
+      case 'noise': expression=`fbm(${q}*${k}*2.+vec3(${seed},0.,time*.08))*2.-1.`;break;
+      case 'cells': expression=`cell(${q}.xy*${k}*3.+${q}.z*.4)`;break;
+      case 'recursive': expression=`recursive(${q}*${k}*.7+vec3(0.,0.,sin(time*.1)*.2))`;break;
+      case 'spiral': expression=`sin(atan(${q}.y,${q}.x)*(5.+${k}*3.)+log(length(${q}.xy)+.18)*(5.+${k}*2.)+sin(${q}.z*3.+time*.15))`;break;
+      case 'growth': expression=`texture(growthTex,${q}.xy*.22+.5+sin(${q}.z)*.025).r*2.-1.`;break;
+      case 'chemical': expression=`clamp(texture(stateTex,${q}.xy*.19+.5).g*4.5-.5,-1.,1.)`;break;
+      case 'wave': expression=`sin(${q}.x*${k}*3.+sin(${q}.y*4.+time*.23)*2.+${q}.z*2.+${phase})*cos(${q}.y*${k}*2.-time*.13)`;break;
+      case 'union':expression=`max(f${node.a},f${node.b})*.9`;break;
+      case 'carve':expression=`min(f${node.a},-f${node.b}+.35)`;break;
+      case 'modulate':expression=`f${node.a}*(.65+.35*f${node.b})`;break;
+      case 'interfere':expression=`sin(f${node.a}*2.8+f${node.b}*1.7)*.85`;break;
+    }
+    code+=`float f${i}=${expression};\n`;
+  });
+  code+=`return vec3(f${g.root},f0,f1);}\n`;
+  return code;
+}
+function shaderSource(g) {
+  const c=g.composition;
+  let code=library+fieldCode(g);
+  if(g.render.main==='surface'){
+    code+=`float scene(vec3 p){p.xy=rot(p.z*${float(g.sculpture.twist)}+time*.08)*p.xy;`;
+    if(c.layout!=='orbit') code+='p.xy=mod(p.xy+1.4,2.8)-1.4;';
+    if(g.sculpture.kind==='crystal') code+=`float scale=1.;for(int i=0;i<3;i++){p=abs(p)-vec3(.66,.4,.36);p.xy=rot(.71)*p.xy;p=p*1.7;scale*=1.7;}float facet=box(p,vec3(.48,.3,.38));float spike=max(length(p.xy*vec2(1.,.7))-(.18-.12*p.z),abs(p.z)-.72);return min(facet,spike)/scale;}`;
+    else if(g.sculpture.kind==='lattice')code+='return max(box(p,vec3(.9)), -box(mod(p+.3,.6)-.3,vec3(.17,.5,.17)))*.7;}';
+    else code+='return (length(p)-.9+sin(p.x*7.+sin(p.y*5.))*sin(p.z*6.+time*.2)*(.1+bands[2]*.09)+abs(sin(p.y*15.+p.z*3.))*.025)*.65;}';
+    code+=`vec3 surface(vec2 uv){vec3 ro=vec3(camera.xy*.5,3.7),rd=normalize(vec3(uv,-1.9));float travel=.3;vec3 p=ro;bool hit=false;for(int i=0;i<36;i++){p=ro+rd*travel;float d=scene(p);if(d<.0035){hit=true;break;}travel+=max(.002,d*.65);if(travel>7.)break;}if(!hit)return vec3(0);vec2 e=vec2(.006,0);float center=scene(p);vec3 n=normalize(vec3(scene(p+e.xyy),scene(p+e.yxy),scene(p+e.yyx))-center);vec3 f=fields(p);float shade=.12+.8*max(0.,dot(n,normalize(vec3(-.6,.7,1.))));float spec=pow(max(0.,dot(n,normalize(vec3(-.3,.35,1.)))),24.);float mask=.5+.5*smoothstep(-.4,.8,f.x);return pigment(f.x*2.+f.z)*shade*mask+pigment(f.y)*pow(1.-max(0.,dot(n,-rd)),3.)*.3+vec3(.55,.75,.9)*spec*.4;}`;
+  }
+  if(g.render.main==='volume'){
+    code+=`vec3 volumeField(vec2 uv){vec3 color=vec3(0);float transmit=1.;for(int i=0;i<14;i++){float z=float(i)*.22;vec3 q=vec3(uv*(1.+z*.12)+camera.xy*.3,z-time*.07);vec3 f=fields(q);float gas=smoothstep(.05+black*.13,.86,f.x)*(.1+.04*bands[3]);vec3 tint=pigment(f.y*2.+z*.5);color+=transmit*gas*tint*(.7+glow*.8+bands[9]*.3);transmit*=1.-gas;}return color;}`;
+  }
+  code+='void main(){vec2 uv=(gl_FragCoord.xy*2.-resolution)/resolution.y;';
+  code+=`uv=rot(camera.w+${float(c.rotation)})*uv*camera.z*${float(c.scale)};uv+=vec2(${float(c.offset[0])},${float(c.offset[1])});`;
+  if(c.layout==='tunnel')code+='uv=vec2(atan(uv.y,uv.x)*1.3,log(length(uv)+.2)*1.5-time*.13);';
+  else if(c.layout==='drift')code+='uv+=camera.xy+vec2(time*.035,-time*.022);';
+  else if(c.layout==='plane')code+='uv+=camera.xy*.35;';
+  else code+='uv+=sin(time*.1)*.08;';
+  code+='uv*=1.+bands[2]*.04;uv+=vec2(bands[0],bands[1])*.03;vec3 f=fields(vec3(uv, time*.04+bands[1]*.14));vec3 color=';
+  code+=g.render.main==='surface'?'surface(uv)':g.render.main==='volume'?'volumeField(uv)':`${g.render.main}(f,uv)`;
+  const overlay=`${g.render.overlay}(vec3(f.y*.7+f.x*.3,f.z,f.x),uv)*${float(g.render.weight)}`;
+  if(g.render.join==='maximum')code+=`;color=max(color,${overlay});`;
+  else if(g.render.join==='etch')code+=`;color*=.7+${overlay};`;
+  else code+=`;color+=${overlay}*(1.-color*.45);`;
+  code+='color*=.9+bands[4]*.06+bands[6]*.05;color+=color*color*bands[8]*.08;color=max(vec3(0),color-vec3(.015+black*.035));color=1.-exp(-color*(2.0+glow*.8+bands[9]*.1));frag=vec4(clamp(color,0.,.97),1.);}';
+  return code;
+}
+function compileSource(source) {
+  const shaders=[];let program=null;
+  try {
+    for(const [type,text] of [[gl.VERTEX_SHADER,vertex],[gl.FRAGMENT_SHADER,source]]){
+      const shader=gl.createShader(type);shaders.push(shader);gl.shaderSource(shader,text);gl.compileShader(shader);
+      if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(shader));
+    }
+    program=gl.createProgram();shaders.forEach(shader=>gl.attachShader(program,shader));gl.linkProgram(program);
+    if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
+    return program;
+  } catch(error){if(program)gl.deleteProgram(program);throw error;}
+  finally {shaders.forEach(shader=>gl.deleteShader(shader));}
+}
+const uniformNames=['resolution','time','level','impact','energy','density','complexity','radial','black','glow','hue','roughness','lightAngle','camera','bands[0]','noiseTex','stateTex','growthTex'];
+function locations(program,names){return Object.fromEntries(names.map(name=>[name,gl.getUniformLocation(program,name)]));}
+function texture(width,height,data=null,{floating=false,repeat=false}={}) {
+  const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texImage2D(gl.TEXTURE_2D,0,floating?gl.RGBA16F:gl.RGBA8,width,height,0,gl.RGBA,floating?gl.FLOAT:gl.UNSIGNED_BYTE,data);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  for(const axis of [gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T])gl.texParameteri(gl.TEXTURE_2D,axis,repeat?gl.REPEAT:gl.CLAMP_TO_EDGE);
+  return tex;
+}
+function framebuffer(width,height,options={}) {
+  const tex=texture(width,height,options.data||null,options),fb=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,fb);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,tex,0);
+  if(gl.checkFramebufferStatus(gl.FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)throw Error('描画バッファの初期化に失敗');
+  return {tex,fb,width,height};
+}
+function disposeTarget(target){if(target){gl.deleteTexture(target.tex);gl.deleteFramebuffer(target.fb);}}
+function bindTexture(unit,tex){gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,tex);}
+const growthCache = new Map();
+function growthTexture(g) {
+  const key=JSON.stringify(g);
+  if(growthCache.has(key)){const item=growthCache.get(key);item.refs++;return item;}
+  // Stochastic turtle branching. Rasterize once per topology, then reuse its field.
+  let seed=g.seed>>>0;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+  const image=document.createElement('canvas');image.width=image.height=512;
+  const ctx=image.getContext('2d');ctx.fillStyle='black';ctx.fillRect(0,0,512,512);ctx.lineCap='round';ctx.strokeStyle='white';
+  let count=0;
+  function branch(x,y,angle,length,depth){
+    if(depth<=0||count>=450)return;count++;
+    const bend=(random()-.5)*.18,nx=x+Math.cos(angle+bend)*length,ny=y+Math.sin(angle+bend)*length;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+Math.cos(angle-.15)*length*.55,y+Math.sin(angle-.15)*length*.55,nx,ny);ctx.lineWidth=Math.max(2,depth*3.4);ctx.strokeStyle='#888';ctx.shadowColor='#aaa';ctx.shadowBlur=7;ctx.stroke();ctx.shadowBlur=0;ctx.strokeStyle='white';ctx.lineWidth=Math.max(.8,depth*.85);ctx.stroke();
+    branch(nx,ny,angle+g.angle*(.7+random()*.6),length*g.shrink,depth-1);
+    branch(nx,ny,angle-g.angle*(.7+random()*.6),length*g.shrink,depth-1);
+    if(depth>3&&random()<.24)branch(nx,ny,angle+random()-.5,length*g.shrink*.8,depth-2);
+  }
+  const arms=3+Math.floor(random()*3);
+  for(let i=0;i<arms;i++)branch(256,256,i*Math.PI*2/arms,54+random()*12,g.depth);
+  const tex=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,tex);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.REPEAT);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.REPEAT);
+  const item={tex,branches:count,key,refs:1};growthCache.set(key,item);return item;
+}
+function buildBundle(g) {
+  const source=shaderSource(g),program=compileSource(source);let growth;
+  try {growth=growthTexture(g);}catch(error){gl.deleteProgram(program);throw error;}
+  compileCount++;
+  return {graph:g,program,uniforms:locations(program,uniformNames),growth,source};
+}
+function disposeBundle(bundle){if(bundle){gl.deleteProgram(bundle.program);if(--bundle.growth.refs===0){gl.deleteTexture(bundle.growth.tex);growthCache.delete(bundle.growth.key);}}}
+function record(g,reason){
+  evolutionLog.push({generation,at:clock,reason,graph:clone(g),moduleTimes:{nextMaterial,nextCamera,nextFeedback}});
+  if(evolutionLog.length>40)evolutionLog.shift();
+}
+function mutate(major=false,origin='auto'){
+  if(!gl||gl.isContextLost())return;
+  if(pending){queuedMajor=queuedMajor||major;if(major){queuedMajorOrigin=origin;mutationPhase='queued';updateMutationUI(true);}droppedRequests+=major?0:1;return;}
+  mutationPhase='compiling';lastMutationOrigin=origin;updateMutationUI(true);
+  try {
+    const candidate=graph?mutateGraph(graph,major):newGraph();
+    let bundle=buildBundle(candidate);
+    if(!probe(bundle)){
+      disposeBundle(bundle);rejections++;
+      candidate.fields[candidate.root]={op:'union',a:0,b:1};
+      candidate.fields[0].op=pick(['cells','recursive','growth']);
+      bundle=buildBundle(candidate);
+      if(!probe(bundle)){disposeBundle(bundle);rejections++;nextMutation=clock+5;mutationPhase='rejected';updateMutationUI(true);status('暗すぎる生成式を棄却：現在の構造を継続');return;}
+    }
+    mutationCount++;
+    if(major){materialTarget={hue:material.hue+rand(1.2,2.8),roughness:rand(.25,.8),light:rand(-2,2)};cameraTarget={x:rand(-1.1,1.1),y:rand(-.8,.8),zoom:rand(.75,1.5),angle:rand(-.6,.6)};memoryTarget={amount:rand(.12,.45),curl:rand(-1,1)};}
+    mutationPhase=active?'transition':'idle';
+    if(!active){active=bundle;graph=candidate;generation++;shaderVersion=bundle.source;record(graph,'session');}
+    else {pending=bundle;transition=0;transitionStart=clock;transitionDuration=rand(5.5,9.5)/(1+energy*.35);record(candidate,major?'meta mutation requested':'graph mutation requested');}
+    nextMutation=clock+transitionDuration+rand(7,14)/(.5+value('change')+energy*.4);
+    status(active&&pending?'生成方式を連続変容中 · 構造と履歴を継承':'準備完了 · 音楽 / マイク / デモを選択');
+  }catch(error){compileErrors.push(String(error));mutationPhase='error';updateMutationUI(true);status('新しい生成式を棄却：現在の映像を維持');console.error(error);}
+}
+$('mutate').onclick=()=>{manualMutationClicks++;mutate(true,'button');updateMutationUI(true);};
+$('direction').onchange=()=>mutate(true);
+
+// Gray–Scott reaction diffusion is retained across graph and renderer mutations.
+const simulationSource=`#version 300 es
+precision highp float;
+out vec4 frag;
+uniform sampler2D stateTex;
+uniform vec2 texel;
+uniform float feed,kill,drive;
+void main(){vec2 uv=gl_FragCoord.xy*texel;vec2 c=texture(stateTex,uv).rg;vec2 lap=-c;lap+=(texture(stateTex,uv+vec2(texel.x,0)).rg+texture(stateTex,uv-vec2(texel.x,0)).rg+texture(stateTex,uv+vec2(0,texel.y)).rg+texture(stateTex,uv-vec2(0,texel.y)).rg)*.2;lap+=(texture(stateTex,uv+texel).rg+texture(stateTex,uv-texel).rg+texture(stateTex,uv+vec2(texel.x,-texel.y)).rg+texture(stateTex,uv+vec2(-texel.x,texel.y)).rg)*.05;float reaction=c.r*c.g*c.g;vec2 delta=vec2(lap.r*.9-reaction+feed*(1.-c.r),lap.g*.45+reaction-(kill+feed)*c.g);vec2 next=clamp(c+delta*.85,0.,1.);next.g+=drive*.00004*sin(uv.x*19.)*sin(uv.y*17.);frag=vec4(next,0,1);}`;
+const compositeSource=`#version 300 es
+precision highp float;
+out vec4 frag;
+uniform sampler2D sceneA,sceneB,history;
+uniform vec2 resolution;
+uniform float progress,amount,curl,time,gate,impact,blackCut,exposure;
+void main(){vec2 uv=gl_FragCoord.xy/resolution;float s=progress*progress*(3.-2.*progress);float front=sin(uv.x*5.+uv.y*4.+time*.07)*sin(uv.y*7.-uv.x*2.);float blend=clamp(s+front*.1*4.*s*(1.-s),0.,1.);vec3 a=texture(sceneA,uv).rgb,b=texture(sceneB,uv).rgb;vec3 color=mix(a,b,blend)*exposure;float lum=dot(color,vec3(.2126,.7152,.0722));color*=smoothstep(blackCut,blackCut+.11,lum);color=min(color,vec3(.97));vec2 flow=vec2(sin(uv.y*7.+time*.08),cos(uv.x*6.-time*.06))*(.001+.0015*impact)*curl;vec3 prior=texture(history,clamp(uv+flow,vec2(0),vec2(1))).rgb;vec3 echo=max(color,prior*.955);color=mix(color,echo,amount);frag=vec4(color*gate,1.);}`;
+let noiseTexture=null,simulation=null,simulationProgram=null,simulationUniforms=null,floatState=false,stateIndex=0;
+let compositeProgram=null,compositeUniforms=null;
+let sceneTargets=[],historyTargets=[],historyIndex=0,metricTarget=null;
+let w=0,h=0,scale=.85,frameCount=0,fpsMeasured=0,renderMs=0,lastRender=0;
+let fpsStart=0,lastMetrics=0,lastAdapt=0,qualityMetrics=null,previousPixels=null,stale=0;
+let historyPreservations=0,resourceResizes=0;
+const metricPixels=new Uint8Array(32*18*4);
+function initGPU(){
+  const randomData=new Uint8Array(128*128*4);for(let i=0;i<randomData.length;i++)randomData[i]=Math.floor(rand(0,256));
+  noiseTexture=texture(128,128,randomData,{repeat:true});
+  floatState=!!gl.getExtension('EXT_color_buffer_float');
+  const sw=160,sh=96,initial=floatState?new Float32Array(sw*sh*4):new Uint8Array(sw*sh*4);
+  const seeds=Array.from({length:25},()=>({x:rand(0,sw),y:rand(0,sh),r:rand(2,6)}));
+  for(let y=0;y<sh;y++)for(let x=0;x<sw;x++){
+    const i=(y*sw+x)*4,seeded=seeds.some(s=>Math.hypot(x-s.x,y-s.y)<s.r);
+    initial[i]=floatState?(seeded?.5:1):(seeded?128:255);initial[i+1]=seeded?(floatState?.35:90):0;initial[i+3]=floatState?1:255;
+  }
+  simulation=[framebuffer(sw,sh,{floating:floatState,repeat:true,data:initial}),framebuffer(sw,sh,{floating:floatState,repeat:true,data:initial})];
+  simulationProgram=compileSource(simulationSource);simulationUniforms=locations(simulationProgram,['stateTex','texel','feed','kill','drive']);
+  compositeProgram=compileSource(compositeSource);compositeUniforms=locations(compositeProgram,['sceneA','sceneB','history','resolution','progress','amount','curl','time','gate','impact','blackCut','exposure']);
+  metricTarget=framebuffer(32,18);
+}
+function advanceSimulation(){
+  gl.useProgram(simulationProgram);gl.viewport(0,0,160,96);
+  gl.uniform2f(simulationUniforms.texel,1/160,1/96);
+  gl.uniform1i(simulationUniforms.stateTex,0);
+  gl.uniform1f(simulationUniforms.feed,.033+bands[4]*.006);
+  gl.uniform1f(simulationUniforms.kill,.059+bands[8]*.004);
+  gl.uniform1f(simulationUniforms.drive,beat);
+  for(let step=0;step<2;step++){
+    bindTexture(0,simulation[stateIndex].tex);const next=1-stateIndex;
+    gl.bindFramebuffer(gl.FRAMEBUFFER,simulation[next].fb);gl.drawArrays(gl.TRIANGLES,0,3);stateIndex=next;stateSteps++;
+  }
+}
+function resize(){
+  const aspect=canvas.clientWidth/Math.max(1,canvas.clientHeight),cap=Number($('quality').value);
+  const effectiveScale=scale*(pending?.82:1);
+  const upper=Math.max(1,Math.floor(Math.min(cap,720*aspect)));
+  const nw=Math.max(1,Math.min(upper,Math.max(Math.min(240,upper),Math.round(upper*effectiveScale)))),nh=Math.max(1,Math.round(nw/aspect));
+  if(nw===w&&nh===h)return;
+  const oldScenes=sceneTargets,oldHistory=historyTargets,oldIndex=historyIndex,ow=w,oh=h;
+  w=canvas.width=nw;h=canvas.height=nh;
+  sceneTargets=[framebuffer(w,h),framebuffer(w,h)];historyTargets=[framebuffer(w,h),framebuffer(w,h)];historyIndex=0;
+  for(const target of historyTargets){gl.bindFramebuffer(gl.FRAMEBUFFER,target.fb);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);}
+  if(oldHistory.length){
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER,oldHistory[oldIndex].fb);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,historyTargets[0].fb);
+    gl.blitFramebuffer(0,0,ow,oh,0,0,w,h,gl.COLOR_BUFFER_BIT,gl.LINEAR);historyPreservations++;
+  }
+  [...oldScenes,...oldHistory].forEach(disposeTarget);resourceResizes++;
+}
+$('quality').onchange=()=>{scale=1;lastAdapt=performance.now();};
+function drawBundle(bundle,target,width=w,height=h){
+  gl.bindFramebuffer(gl.FRAMEBUFFER,target.fb);gl.viewport(0,0,width,height);gl.useProgram(bundle.program);
+  const u=bundle.uniforms;
+  gl.uniform2f(u.resolution,width,height);
+  const scalars={time:visualTime,level:volume,impact:beat*value('punch'),energy,density,complexity:value('detailSlider'),radial:value('radial'),black:value('black'),glow:value('glow'),hue:material.hue,roughness:material.roughness,lightAngle:material.light};
+  for(const key in scalars)gl.uniform1f(u[key],scalars[key]);
+  gl.uniform4f(u.camera,camera.x,camera.y,camera.zoom,camera.angle);gl.uniform1fv(u['bands[0]'],routed);
+  bindTexture(0,noiseTexture);bindTexture(1,simulation[stateIndex].tex);bindTexture(2,bundle.growth.tex);
+  gl.uniform1i(u.noiseTex,0);gl.uniform1i(u.stateTex,1);gl.uniform1i(u.growthTex,2);gl.drawArrays(gl.TRIANGLES,0,3);
+}
+function probe(bundle){
+  drawBundle(bundle,metricTarget,32,18);
+  gl.readPixels(0,0,32,18,gl.RGBA,gl.UNSIGNED_BYTE,metricPixels);
+  let lit=0;for(let i=0;i<metricPixels.length;i+=4)lit+=metricPixels[i]+metricPixels[i+1]+metricPixels[i+2]>35?1:0;
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  return lit>6;
+}
+function evaluate(now){
+  if(volume<.008)return;
+  gl.bindFramebuffer(gl.READ_FRAMEBUFFER,historyTargets[historyIndex].fb);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,metricTarget.fb);
+  gl.blitFramebuffer(0,0,w,h,0,0,32,18,gl.COLOR_BUFFER_BIT,gl.LINEAR);gl.bindFramebuffer(gl.FRAMEBUFFER,metricTarget.fb);
+  gl.readPixels(0,0,32,18,gl.RGBA,gl.UNSIGNED_BYTE,metricPixels);
+  let dark=0,white=0,diff=0,total=0,center=0;
+  for(let i=0;i<metricPixels.length;i+=4){
+    const lum=(metricPixels[i]*.2126+metricPixels[i+1]*.7152+metricPixels[i+2]*.0722)/255;
+    dark+=lum<.035?1:0;white+=lum>.92?1:0;total+=lum;
+    const x=(i/4)%32,y=Math.floor(i/4/32);if(x>10&&x<22&&y>5&&y<13)center+=lum;
+    if(previousPixels)diff+=(Math.abs(metricPixels[i]-previousPixels[i])+Math.abs(metricPixels[i+1]-previousPixels[i+1])+Math.abs(metricPixels[i+2]-previousPixels[i+2]))/765;
+  }
+  qualityMetrics={dark:dark/576,white:white/576,change:diff/576,centerFraction:center/Math.max(.001,total),mean:total/576};
+  const desiredDark=.14+value('black')*.22;
+  inkTarget=clamp(inkTarget+(desiredDark-qualityMetrics.dark)*.16,.005,.42);
+  if(qualityMetrics.mean<.07&&qualityMetrics.dark<.96)exposureTarget=Math.min(1.6,exposureTarget+.08);
+  if(qualityMetrics.mean>.3||qualityMetrics.white>.005)exposureTarget=Math.max(.8,exposureTarget-.07);
+  stale=previousPixels&&qualityMetrics.change<.012?stale+(now-lastMetrics)/1000:0;
+  if(!previousPixels)previousPixels=new Uint8Array(metricPixels.length);previousPixels.set(metricPixels);
+  $('metrics').textContent=`全体評価 / 黒 ${Math.round(qualityMetrics.dark*100)}% · 白飛び ${Math.round(qualityMetrics.white*100)}% · 中央光量 ${Math.round(qualityMetrics.centerFraction*100)}%`;
+  if(stale>18&&value('change')>0&&!pending){mutate(true);stale=0;}
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+}
+function render(now){
+  resize();
+  if(pending)transition=clamp((clock-transitionStart)/transitionDuration);
+  if(volume>.001){
+    advanceSimulation();drawBundle(active,sceneTargets[0]);
+    if(pending)drawBundle(pending,sceneTargets[1]);
+    const next=1-historyIndex;
+    gl.bindFramebuffer(gl.FRAMEBUFFER,historyTargets[next].fb);gl.viewport(0,0,w,h);gl.useProgram(compositeProgram);
+    const u=compositeUniforms;
+    bindTexture(0,sceneTargets[0].tex);bindTexture(1,pending?sceneTargets[1].tex:sceneTargets[0].tex);bindTexture(2,historyTargets[historyIndex].tex);
+    gl.uniform1i(u.sceneA,0);gl.uniform1i(u.sceneB,1);gl.uniform1i(u.history,2);gl.uniform2f(u.resolution,w,h);
+    gl.uniform1f(u.progress,pending?transition:0);gl.uniform1f(u.amount,memory.amount);gl.uniform1f(u.curl,memory.curl);
+    gl.uniform1f(u.time,visualTime);gl.uniform1f(u.impact,beat);gl.uniform1f(u.blackCut,inkFloor);gl.uniform1f(u.exposure,exposure);gl.uniform1f(u.gate,clamp((volume-.0018)/.026));
+    gl.drawArrays(gl.TRIANGLES,0,3);historyIndex=next;feedbackFrames++;
+  }else{
+    for(const target of historyTargets){gl.bindFramebuffer(gl.FRAMEBUFFER,target.fb);gl.clearColor(0,0,0,1);gl.clear(gl.COLOR_BUFFER_BIT);}
+  }
+  gl.bindFramebuffer(gl.READ_FRAMEBUFFER,historyTargets[historyIndex].fb);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,null);
+  gl.blitFramebuffer(0,0,w,h,0,0,w,h,gl.COLOR_BUFFER_BIT,gl.NEAREST);gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  if(now-lastMetrics>3500){evaluate(now);lastMetrics=now;}
+  if(pending&&transition>=1){
+    disposeBundle(active);active=pending;pending=null;graph=active.graph;generation++;shaderVersion=active.source;
+    mutationPhase='complete';record(graph,'transition completed');updateMutationUI(true);status('自律生成中 · '+labels[graph.render.main]);
+  }
+  frameCount++;
+}
+function updateMutationUI(force=false){
+  const now=performance.now();if(!force&&now-lastMutationUI<120)return;lastMutationUI=now;
+  let message='自律生成中';
+  if(pending)message=`${labels[graph.render.main]} → ${labels[pending.graph.render.main]} · 変容 ${Math.round(transition*100)}%${queuedMajor?' · 次の大変異を予約済み':''}`;
+  else if(mutationPhase==='compiling')message='新しい生成構造を構築中';
+  else if(mutationPhase==='rejected')message='暗い候補を棄却。現在の構造を継続';
+  else if(mutationPhase==='error')message='構築に失敗。現在の映像を維持';
+  else if(mutationPhase==='complete')message=`変容完了 · 世代 ${generation} · ${labels[graph.render.main]}`;
+  $('mutationState').textContent=message;$('mutationProgress').value=pending?transition:mutationPhase==='complete'?1:0;
+  $('mutate').textContent=pending?'次の大変異を予約 ↗':'世界観を大変異 ↗';
+  $('morphHud').textContent=pending?message:'';
+}
+function tick(now){
+  requestAnimationFrame(tick);
+  const elapsed=lastNow?Math.max(0,(now-lastNow)/1000):.016,dt=Math.min(.2,elapsed);
+  clock+=elapsed;lastNow=now;analyze(dt);updateAudioUI(now);updateMutationUI();inkFloor=mix(inkFloor,inkTarget,1-Math.exp(-dt*.4));exposure=mix(exposure,exposureTarget,1-Math.exp(-dt*.3));
+  visualTime+=dt*(.1+value('motion')*(.3+energy*2.3+beat*value('punch')*1.7+(bpmConfidence?bpm/240:.3)));
+  for(let i=0;i<10;i++)routed[i]=bands[route[i]];
+  for(const [current,target] of [[material,materialTarget],[camera,cameraTarget],[memory,memoryTarget]])for(const key in current)current[key]=mix(current[key],target[key],1-Math.exp(-dt*.35));
+  if(clock>nextMaterial){materialTarget={hue:material.hue+rand(-1.5,1.5),roughness:rand(.2,.85),light:rand(-2,2)};nextMaterial=clock+rand(11,23);materialChanges++;}
+  if(clock>nextCamera){cameraTarget={x:rand(-1.1,1.1),y:rand(-.8,.8),zoom:rand(.75,1.5),angle:rand(-.6,.6)};nextCamera=clock+rand(12,27);cameraChanges++;}
+  if(clock>nextFeedback){memoryTarget={amount:rand(.1,.5),curl:rand(-1,1)};nextFeedback=clock+rand(9,21);}
+  if(clock>nextRoute){route=shuffled(route);nextRoute=clock+rand(9,23);}
+  if(value('change')>0){
+    if((clock>nextMeta||(drop&&clock-lastDrop>18))&&!pending){lastDrop=clock;mutate(true);nextMeta=clock+rand(22,39)/(.65+value('change')*.5+energy*.25);}
+    else if(clock>nextMutation&&!pending)mutate(false);
+  }
+  if(gl&&active&&!gl.isContextLost()&&now-lastRender>=1000/Number($('fps').value)-1){
+    const start=performance.now();lastRender=now;
+    try{render(now);if(queuedMajor&&!pending){queuedMajor=false;const origin=queuedMajorOrigin;queuedMajorOrigin='auto';mutate(true,origin);}}catch(error){status('描画エラー：'+error.message);console.error(error);}
+    renderMs=mix(renderMs,performance.now()-start,.1);
+  }
+  if(now-fpsStart>2000){
+    fpsMeasured=frameCount*1000/(now-fpsStart);frameCount=0;fpsStart=now;
+    $('tempo').textContent=(bpmConfidence>.25?`推定 ${Math.round(bpm)} BPM / 確度 ${Math.round(bpmConfidence*100)}%`:'BPM未確定')+` · 激しさ ${Math.round(energy*100)}% · 密度 ${Math.round(density*100)}%`;
+    const goal=Number($('fps').value);
+    $('detail').textContent=`GEN ${generation} / ${graph?.render.main||''}${pending?' → '+pending.graph.render.main+' '+Math.round(transition*100)+'%':''}\n${graph?.composition.layout||''} / ${graph?.fields.length||0} field nodes · 履歴 ${feedbackFrames}\n${fpsMeasured.toFixed(1)} FPS · ${w} × ${h} · ${floatState?'FP16':'RGBA8'} simulation`;
+    if(now-lastAdapt>4500){lastAdapt=now;if(fpsMeasured<goal*.72||renderMs>1000/goal*.85)scale=Math.max(.35,scale*.82);else if(fpsMeasured>goal*.92&&renderMs<1000/goal*.45)scale=Math.min(1,scale*1.045);}
+  }
+}
+canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();status('GPUコンテキスト喪失：復旧を待機');});
+canvas.addEventListener('webglcontextrestored',()=>location.reload());
+if(!gl)status('WebGL2が必要です。対応ブラウザ・GPU設定を確認してください。');
+else try{initGPU();mutate();requestAnimationFrame(tick);}catch(error){status('GPU初期化エラー：'+error.message);console.error(error);}
+window.vj={snapshot:()=>({
+  version:17,diagnostics:diagnosticSnapshot(),presentation:presentationSnapshot(),material:{...material},materialTarget:{...materialTarget},manualMutationClicks,mutationPhase,lastMutationOrigin,queuedMajor,generation,mutationCount,compileCount,compileErrors:[...compileErrors],graph:graph&&clone(graph),
+  candidate:pending&&clone(pending.graph),shaderVersion,route:[...route],bands:[...bands],volume,energy,density,bpm,bpmConfidence,beatPhase,
+  micState,micError,micDesired,sourceMode,outputRms,audioInitializations,mediaSourceCreations,micRequests,micNodeCreations,stoppedTracks,permission:micPermission?.state,permissionRequestInFlight:!!micRequest,micOn,micPending,micTracks:micStream?.getTracks().map(t=>t.readyState)||[],audioState:audio?.state,outputGain:output?.gain.value,
+  fps:fpsMeasured,width:w,height:h,renderMs,qualityMetrics,evolutionLog:clone(evolutionLog),
+  transition,pending:!!pending,transitionDuration,clock,stateSteps,floatState,feedbackFrames,materialChanges,cameraChanges,
+  inkFloor,exposure,rejections,historyPreservations,resourceResizes,growthCacheSize:growthCache.size,activeBranches:active?.growth.branches,glError:gl?.getError(),contextLost:gl?.isContextLost()
+})};
+
+</script></body></html>

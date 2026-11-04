@@ -1,0 +1,43 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DYING SCREAM — 独立マイクテスト v17</title><style>body{max-width:900px;margin:24px auto;padding:0 18px;background:#111;color:#eee;font:15px system-ui}button{padding:12px;margin:6px;background:#30343b;color:white;border:1px solid #777;cursor:pointer}button:disabled{opacity:.4}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 monospace;background:#191b20;padding:16px}meter{width:100%;height:40px}#state{color:#baffb6}</style></head><body><h1>独立マイクテスト v17</h1><p>VJ・WebGL・音楽ファイル処理を読み込まず、getUserMedia({audio:true})だけで入力を調べます。マイク音は出力しません。</p><p>起動スクリプトから <code>http://127.0.0.1:8765/mic_test.html</code> を直接開いてください。file://や埋め込みプレビューとは別に検査します。</p><button id="on">マイクON</button><button id="off">マイクOFF</button><button id="save">診断JSONを保存</button><div id="state" role="status">OFF</div><meter id="level" min="0" max="1" value="0"></meter><p id="rms">入力RMS: 未測定</p><pre id="report"></pre><script>
+'use strict';
+const $=id=>document.getElementById(id),events=[];
+let ctx,analyser,sink,node,stream,request=null,wanted=false,timer,buffer,rms=0,lastError=null;
+let gum='未実行',resume='未実行',permission='取得不可（未照会）',devices='取得不可（未照会）';
+function log(event,detail={}){events.push({at:new Date().toISOString(),event,...detail});if(events.length>80)events.shift();}
+function tracks(s){return s?s.getAudioTracks().map(t=>({label:t.label||'取得不可',readyState:t.readyState,muted:t.muted,enabled:t.enabled,settings:t.getSettings?.()||{}})):[];}
+function info(){return {version:17,url:location.href,urlOrigin:location.origin,documentOrigin:window.origin??'取得不可',secureContext:window.isSecureContext??'取得不可',iframe:self!==top,mediaDevices:!!navigator.mediaDevices,getUserMedia:typeof navigator.mediaDevices?.getUserMedia==='function',gum,resume,context:ctx?.state||'未作成',tracks:tracks(stream||request?.stream),rms,permission,devices,lastError,macOSPermission:'取得不可（WebページからOS設定は読めません）',events};}
+function paint(){ $('report').textContent=JSON.stringify(info(),null,2);$('on').disabled=!!request||wanted; }
+function state(text){$('state').textContent=text;paint();}
+function stop(s){if(s)s.getTracks().forEach(t=>t.stop());}
+function off(){wanted=false;clearTimeout(timer);if(node)node.disconnect();node=null;stop(stream);stop(request?.stream);stream=null;rms=0;$('level').value=0;log('off');state(request?'OFF（ブラウザの未完了要求は残っています。遅い入力は停止します）':'OFF');}
+function fail(error,phase){lastError={name:error.name,message:error.message,phase,at:new Date().toISOString()};log('error',lastError);off();state(`${phase}: ${error.name} — ${error.message}。NotAllowedErrorだけではSafariとmacOSのどちらの拒否か確定できません。URL/originと下の記録を確認してください。`);}
+function bounded(p,ms,message){return new Promise((resolve,reject)=>{const t=setTimeout(()=>reject(new DOMException(message,'TimeoutError')),ms);Promise.resolve(p).then(v=>{clearTimeout(t);resolve(v);},e=>{clearTimeout(t);reject(e);});});}
+function audioStart(){
+ if(!ctx){const C=window.AudioContext||window.webkitAudioContext;if(!C)throw new Error('Web Audio APIがありません');ctx=new C();analyser=ctx.createAnalyser();analyser.fftSize=2048;buffer=new Float32Array(2048);sink=ctx.createGain();sink.gain.value=0;analyser.connect(sink);sink.connect(ctx.destination);log('context_created',{sampleRate:ctx.sampleRate});}
+ if(ctx.state==='running'){resume='running';return Promise.resolve();}
+ resume='pending';log('resume_called');return bounded(ctx.resume(),6000,'AudioContext.resumeが未完了').then(()=>{resume=ctx.state;log('resume_resolved',{state:ctx.state});},e=>{resume='rejected';log('resume_rejected',{name:e.name,message:e.message});throw e;});
+}
+async function inspect(){
+ try{permission=navigator.permissions?.query?(await bounded(navigator.permissions.query({name:'microphone'}),2000,'権限照会が未完了')).state:'取得不可（Permissions APIなし）';}catch(e){permission='取得不可: '+e.name+' '+e.message;}
+ try{devices=navigator.mediaDevices?.enumerateDevices?(await bounded(navigator.mediaDevices.enumerateDevices(),2000,'一覧照会が未完了')).filter(d=>d.kind==='audioinput').map(d=>({label:d.label||'名前取得不可（非公開の可能性）'})):'取得不可';}catch(e){devices='取得不可: '+e.name+' '+e.message;}
+ paint();
+}
+$('on').onclick=()=>{
+ if(request||wanted)return;wanted=true;gum='pending';log('on_clicked');state('入力の許可／取得待ち');
+ if(!navigator.mediaDevices?.getUserMedia){gum='利用不可';fail(new DOMException('getUserMediaなし。localhostで直接開いてください。','NotSupportedError'),'capture');return;}
+ const ticket={stream:null};request=ticket;
+ // Capture is invoked first, with the exact minimal constraints; resume is not a prerequisite.
+ let capture;log('gum_called',{constraints:{audio:true}});try{capture=navigator.mediaDevices.getUserMedia({audio:true});}catch(e){capture=Promise.reject(e);}
+ let initial;try{initial=audioStart();initial.catch(()=>{});}catch(e){initial=Promise.reject(e);initial.catch(()=>{});log('audio_setup_error',{name:e.name,message:e.message});}
+ timer=setTimeout(()=>{if(request===ticket&&wanted)fail(new DOMException('getUserMediaが未完了。許可表示・OS設定を確認。タイムアウトは許可問題の解決ではありません。','TimeoutError'),'capture');},15000);
+ Promise.resolve(capture).then(async s=>{
+  gum='resolved';ticket.stream=s;log('gum_resolved',{tracks:tracks(s)});clearTimeout(timer);if(!wanted){stop(s);return;}
+  let phase='resume';try{await audioStart();if(!wanted){stop(s);return;}phase='connect';if(s.getAudioTracks().every(t=>t.readyState==='ended'))throw new DOMException('Trackが終了済み','AbortError');node=ctx.createMediaStreamSource(s);node.connect(analyser);stream=s;log('input_connected');state('ON（実入力の音量を下のメーターで確認）');for(const t of s.getAudioTracks())t.onended=()=>{if(wanted)fail(new DOMException('Trackが終了しました','NotReadableError'),'track');};inspect();}catch(e){stop(s);if(wanted)fail(e,phase);}
+ },e=>{gum='rejected';log('gum_rejected',{name:e.name,message:e.message});if(wanted)fail(e,'capture');}).finally(()=>{if(request===ticket)request=null;paint();});
+};
+$('off').onclick=off;
+$('save').onclick=()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(info(),null,2)],{type:'application/json'}));a.href=url;a.download='DYING_SCREAM_mic_test.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);};
+setInterval(()=>{if(stream&&ctx?.state==='running'){analyser.getFloatTimeDomainData(buffer);rms=Math.sqrt(buffer.reduce((s,v)=>s+v*v,0)/buffer.length);$('level').value=Math.min(1,rms*6);$('rms').textContent='入力RMS: '+rms.toFixed(5);}paint();},100);
+inspect();
+window.micTest={snapshot:info};
+</script></body></html>

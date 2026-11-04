@@ -1,0 +1,326 @@
+{
+  "environment": "Linux Chromium; virtual microphone; Safari/macOS/physical mic unverified",
+  "suites": {
+    "isolation": {
+      "checks": [
+        "Minimal native capture + nonzero virtual-input RMS",
+        "OFF stops tracks; ON reacquires"
+      ],
+      "errors": []
+    },
+    "audio": {
+      "checks": [
+        {
+          "name": "WAV playback reaches actual browser destination input with nonzero PCM",
+          "status": "passed",
+          "rms": 0.027758711218950193,
+          "connections": [
+            {
+              "type": "GainNode",
+              "gain": 0
+            },
+            {
+              "type": "AnalyserNode"
+            }
+          ],
+          "limitation": "No physical audio device / acoustic listening available"
+        },
+        {
+          "name": "10 AGC bands + single context and media source",
+          "status": "passed",
+          "bands": [
+            0.222206249833107,
+            0.21728083491325378,
+            0.2763076722621918,
+            0.26556435227394104,
+            0.18212081491947174,
+            0.11663443595170975,
+            0.07292072474956512,
+            0.04908989369869232,
+            0.06594311445951462,
+            0.03379809111356735
+          ]
+        },
+        {
+          "name": "Gain zero silences destination while analysis remains live",
+          "status": "passed"
+        },
+        {
+          "name": "Seek / pause / explicit resume restores destination PCM",
+          "status": "passed"
+        },
+        {
+          "name": "Browser virtual microphone permission → ON / analysis / no speaker loopback",
+          "status": "passed",
+          "kind": "Chromium fake input device, not physical mic"
+        },
+        {
+          "name": "Space OFF synchronizes UI and stops all tracks",
+          "status": "passed"
+        },
+        {
+          "name": "Rapid Space ON/OFF/ON reuses one permission request; repeats ignored",
+          "status": "passed"
+        },
+        {
+          "name": "Text editing preserves Space and microphone state",
+          "status": "passed"
+        },
+        {
+          "name": "File → microphone → file retains nonzero destination PCM",
+          "status": "passed"
+        },
+        {
+          "name": "Repeated file loads do not recreate MediaElementAudioSourceNode",
+          "status": "passed"
+        },
+        {
+          "name": "No unhandled browser exceptions in real audio-path tests",
+          "status": "passed"
+        },
+        {
+          "name": "Actual browser permission denial maps to denied with site-settings instructions",
+          "status": "passed"
+        },
+        {
+          "name": "NotFoundError → missing device with recovery help",
+          "status": "passed",
+          "kind": "Controlled fault injection; not a physical-device success test"
+        },
+        {
+          "name": "Busy device → explicit error",
+          "status": "passed",
+          "kind": "Controlled fault injection; not a physical-device success test"
+        },
+        {
+          "name": "Insecure environment rejected before capture",
+          "status": "passed",
+          "kind": "Controlled fault injection; not a physical-device success test"
+        },
+        {
+          "name": "Unanswered permission expires visibly; retry does not duplicate GUM",
+          "status": "passed",
+          "kind": "Controlled fault injection; not a physical-device success test"
+        },
+        {
+          "name": "Late permission after cancellation stops stream without going ON",
+          "status": "passed",
+          "kind": "Controlled fault injection; not a physical-device success test"
+        },
+        {
+          "name": "Stalled resume does not prevent GUM call; stream stops on resume error",
+          "status": "passed",
+          "kind": "Controlled fault injection; not a physical-device success test"
+        },
+        {
+          "name": "play() policy rejection → explicit gesture recovery instructions",
+          "status": "passed",
+          "kind": "Controlled fault injection; not a physical-device success test"
+        },
+        {
+          "name": "Unresolved play() has a bounded visible error",
+          "status": "passed",
+          "kind": "Controlled fault injection; not a physical-device success test"
+        },
+        {
+          "name": "Unsupported / corrupt WAV reports actual decoder failure",
+          "status": "passed",
+          "kind": "Controlled fault injection; not a physical-device success test"
+        },
+        {
+          "name": "Explicit gesture retries a pending resume before the old timeout",
+          "status": "passed",
+          "kind": "Controlled fault injection; not a physical-device success test"
+        }
+      ],
+      "errors": []
+    },
+    "browser": {
+      "checks": [
+        {
+          "name": "HTML + WebGL2 compile/link",
+          "status": "passed"
+        },
+        {
+          "name": "Silence blacks out",
+          "status": "passed"
+        },
+        {
+          "name": "Demo produces analyzed bands and visible pixels",
+          "status": "passed"
+        },
+        {
+          "name": "PCM music playback + time + 10 AGC bands",
+          "status": "passed",
+          "bands": [
+            0.038057368248701096,
+            0.03914908692240715,
+            0.05279723182320595,
+            0.07248874008655548,
+            0.025606831535696983,
+            0.020289495587348938,
+            0.023598013445734978,
+            0.04059717431664467,
+            0.04306192696094513,
+            0.004098359029740095
+          ]
+        },
+        {
+          "name": "Seek + pause + resume",
+          "status": "passed"
+        },
+        {
+          "name": "Output gain independent from analysis",
+          "status": "passed"
+        },
+        {
+          "name": "Virtual microphone ON + player pause",
+          "status": "passed",
+          "volume": 0.20197701010550378
+        },
+        {
+          "name": "Microphone OFF stops tracks",
+          "status": "passed"
+        },
+        {
+          "name": "Fullscreen enters and exits",
+          "status": "passed"
+        },
+        {
+          "name": "Forced meta mutation changes renderer + composition + compiled source",
+          "status": "passed"
+        },
+        {
+          "name": "Continuous morph without a black switching frame",
+          "status": "passed",
+          "samples": [
+            {
+              "progress": 0.0608072807680251,
+              "lit": 0.469165505888312,
+              "white": 0,
+              "mean": 0.13749674113028243
+            },
+            {
+              "progress": 0.1621295840363449,
+              "lit": 0.4884133215144992,
+              "white": 0,
+              "mean": 0.12534740999518454
+            },
+            {
+              "progress": 0.23164099270859095,
+              "lit": 0.4488793212612384,
+              "white": 0,
+              "mean": 0.11598818447643973
+            },
+            {
+              "progress": 0.3011176543632541,
+              "lit": 0.4588324680258326,
+              "white": 0,
+              "mean": 0.10553748796804423
+            },
+            {
+              "progress": 0.3648089375905625,
+              "lit": 0.469596049132582,
+              "white": 0,
+              "mean": 0.09835246445038487
+            },
+            {
+              "progress": 0.43432034626280974,
+              "lit": 0.4426237811827276,
+              "white": 0,
+              "mean": 0.0831331497606831
+            },
+            {
+              "progress": 0.5037970079174766,
+              "lit": 0.43834367481322023,
+              "white": 0,
+              "mean": 0.07345405428221484
+            },
+            {
+              "progress": 0.5732910430809325,
+              "lit": 0.3781942509813853,
+              "white": 0,
+              "mean": 0.06250541075828271
+            },
+            {
+              "progress": 0.6427850782443889,
+              "lit": 0.33053058123337975,
+              "white": 0,
+              "mean": 0.05754431442071572
+            },
+            {
+              "progress": 0.7122791134078454,
+              "lit": 0.2913258199316196,
+              "white": 0,
+              "mean": 0.05624752015533335
+            },
+            {
+              "progress": 0.77597039663515,
+              "lit": 0.27301506901354944,
+              "white": 0,
+              "mean": 0.05783511733172467
+            },
+            {
+              "progress": 0.8454644317986034,
+              "lit": 0.28486767126756996,
+              "white": 0,
+              "mean": 0.06571778312439236
+            },
+            {
+              "progress": 0.914958466962058,
+              "lit": 0.31356211219450425,
+              "white": 0,
+              "mean": 0.06388950548772927
+            },
+            {
+              "progress": 0.9844525021255133,
+              "lit": 0.32045080410282384,
+              "white": 0,
+              "mean": 0.06528081732038549
+            }
+          ]
+        },
+        {
+          "name": "Reaction state and feedback history survive renderer mutation",
+          "status": "passed",
+          "steps": [
+            292,
+            628
+          ],
+          "historyPreservations": 7
+        },
+        {
+          "name": "40 seconds autonomous renderer / graph evolution",
+          "status": "passed",
+          "methods": [
+            "contours",
+            "surface",
+            "relief"
+          ],
+          "fps": [
+            30.248933849052882,
+            28.759855209004748,
+            24.794208072994167
+          ]
+        },
+        {
+          "name": "10-band routing evolves",
+          "status": "passed"
+        },
+        {
+          "name": "Independent material and camera schedules",
+          "status": "passed"
+        },
+        {
+          "name": "Stopping input returns to black",
+          "status": "passed"
+        },
+        {
+          "name": "No browser JS / console / WebGL errors",
+          "status": "passed"
+        }
+      ],
+      "errors": []
+    }
+  }
+}
